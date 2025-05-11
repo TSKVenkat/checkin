@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Models based on the previous MongoDB schemas
+model Attendee {
+  id               String   @id @default(uuid())
+  name             String
+  email            String   @unique
+  phone            String
+  role             String
+  uniqueId         String   @unique
+  qrCodeUrl        String
+  version          Int      @default(1)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Registration status
+  isCheckedIn      Boolean  @default(false)
+  checkedInAt      DateTime?
+  checkedInById    String?
+  checkedInBy      Staff?   @relation("CheckedInAttendees", fields: [checkedInById], references: [id])
+  checkedInLocation String?
+
+  // Resource claims
+  lunchClaimed      Boolean  @default(false)
+  lunchClaimedAt    DateTime?
+  lunchClaimedById  String?
+  lunchClaimedBy    Staff?   @relation("LunchClaimedAttendees", fields: [lunchClaimedById], references: [id])
+  lunchClaimedLocation String?
+  
+  kitClaimed        Boolean  @default(false)
+  kitClaimedAt      DateTime?
+  kitClaimedById    String?
+  kitClaimedBy      Staff?   @relation("KitClaimedAttendees", fields: [kitClaimedById], references: [id])
+  kitClaimedLocation String?
+  
+  // Emergency status
+  lastKnownCheckIn   DateTime?
+  safetyConfirmed    Boolean  @default(false)
+  safetyConfirmedAt  DateTime?
+  currentZone        String?
+  
+  // Relations
+  dailyRecords       DailyRecord[]
+}
+
+// For multi-day events tracking
+model DailyRecord {
+  id             String    @id @default(uuid())
+  date           DateTime
+  attendeeId     String
+  attendee       Attendee  @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+  
+  checkedIn      Boolean   @default(false)
+  checkedInAt    DateTime?
+  lunchClaimed   Boolean   @default(false)
+  lunchClaimedAt DateTime?
+  kitClaimed     Boolean   @default(false)
+  kitClaimedAt   DateTime?
+  
+  @@unique([attendeeId, date])
+}
+
+model Staff {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  role            String
+  permissions     String[]
+  passwordHash    String
+  lastLogin       DateTime?
+  emailVerified   Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Session tracking
+  activeSessions  StaffSession[]
+  
+  // Relations for staff checking in attendees
+  checkedInAttendees      Attendee[] @relation("CheckedInAttendees")
+  lunchClaimedAttendees   Attendee[] @relation("LunchClaimedAttendees")
+  kitClaimedAttendees     Attendee[] @relation("KitClaimedAttendees")
+  activatedEmergencies    Event[]    @relation("EmergencyActivatedBy")
+}
+
+model StaffSession {
+  id          String   @id @default(uuid())
+  token       String
+  device      String
+  expiresAt   DateTime
+  staffId     String
+  staff       Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id              String   @id @default(uuid())
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Emergency status
+  isEmergencyActive     Boolean  @default(false)
+  emergencyType         String?
+  emergencyAffectedZones String[]
+  emergencyActivatedAt   DateTime?
+  emergencyActivatedById String?
+  emergencyActivatedBy   Staff?   @relation("EmergencyActivatedBy", fields: [emergencyActivatedById], references: [id])
+  emergencyLastUpdated   DateTime?
+  
+  // Relations
+  locations         EventLocation[]
+  resources         Resource[]
+}
+
+model EventLocation {
+  id          String   @id @default(uuid())
+  name        String
+  type        String
+  capacity    Int
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model Resource {
+  id             String   @id @default(uuid())
+  name           String
+  type           String
+  totalQuantity  Int
+  claimedQuantity Int     @default(0)
+  lowThreshold   Int
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+model OTP {
+  id        String   @id @default(uuid())
+  email     String
+  otp       String
+  type      OTPType
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+enum OTPType {
+  verification
+  password_reset
+}

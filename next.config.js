@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
-    serverComponentsExternalPackages: ['bcrypt']
+    serverComponentsExternalPackages: []
   },
   webpack: (config) => {
     // Ignore node-specific modules in the browser
@@ -18,4 +18,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig; 

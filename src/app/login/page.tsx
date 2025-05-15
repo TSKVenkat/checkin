@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useLogin, tokenStorage, useAuthSession } from '@/lib/query/auth-hooks';
@@ -10,7 +10,8 @@ import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Loading';
 
-export default function LoginPage() {
+// Component that uses useSearchParams
+function LoginForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
@@ -330,5 +331,32 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoadingLogin() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-dark-bg-primary">
+      <div className="flex flex-col items-center">
+        <div className="mb-8 relative">
+          <div className="absolute -z-10 h-[200px] w-[200px] bg-gradient-radial from-primary/20 to-transparent opacity-80 blur-3xl"></div>
+          <img src="/logo-white.svg" alt="CheckIn" className="h-12 relative z-10" />
+        </div>
+        <div className="flex justify-center">
+          <Spinner size="lg" variant="primary" />
+        </div>
+        <p className="mt-4 text-gray-400">Loading login form...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main component with Suspense boundary
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingLogin />}>
+      <LoginForm />
+    </Suspense>
   );
 } 

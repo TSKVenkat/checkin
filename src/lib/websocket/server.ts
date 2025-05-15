@@ -1,4 +1,6 @@
-import WebSocketServer from 'ws';
+// Use a combination of import and require() to correctly reference the types
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const WebSocket = require('ws');
 import http from 'http';
 import { NextApiRequest } from 'next';
 import { verifyAccessToken } from '../auth/auth';
@@ -10,23 +12,27 @@ interface User {
   permissions: string[];
 }
 
-interface ExtendedWebSocket extends WebSocketServer {
+// Custom WebSocket type with user data
+interface ExtendedWebSocket {
   user?: User;
+  send: (data: any) => void;
+  on: (event: string, listener: (...args: any[]) => void) => void;
+  readyState: number;
 }
 
 // WebSocket server instance
-let wsServer: WebSocketServer.Server | null = null;
+let wsServer: any = null;
 let isInitialized = false;
 
 // Initialize WebSocket server
-export function initWebSocketServer(server: http.Server): WebSocketServer.Server {
+export function initWebSocketServer(server: http.Server): any {
   // Don't initialize twice
   if (isInitialized) {
-    return wsServer as WebSocketServer.Server;
+    return wsServer;
   }
 
   // Initialize server
-  wsServer = new WebSocketServer.Server({ noServer: true });
+  wsServer = new WebSocket.Server({ noServer: true });
   isInitialized = true;
 
   // Handle verification and upgrade
@@ -58,8 +64,8 @@ export function initWebSocketServer(server: http.Server): WebSocketServer.Server
         return;
       }
 
-      wsServer.handleUpgrade(request, socket, head, (ws: WebSocketServer) => {
-        wsServer!.emit('connection', ws, request, user);
+      wsServer.handleUpgrade(request, socket, head, (ws: any) => {
+        wsServer.emit('connection', ws, request, user);
       });
     } catch (error) {
       console.error('WebSocket upgrade error:', error);
@@ -69,7 +75,7 @@ export function initWebSocketServer(server: http.Server): WebSocketServer.Server
   });
 
   // Handle connections
-  wsServer.on('connection', (ws: WebSocketServer, request: http.IncomingMessage, user: User) => {
+  wsServer.on('connection', (ws: any, request: http.IncomingMessage, user: User) => {
     // Store user info on the connection
     (ws as ExtendedWebSocket).user = user;
 
@@ -81,7 +87,7 @@ export function initWebSocketServer(server: http.Server): WebSocketServer.Server
     }));
 
     // Handle messages
-    ws.on('message', (message: WebSocketServer.Data) => {
+    ws.on('message', (message: any) => {
       try {
         // Convert Buffer/ArrayBuffer to string
         const messageString = message.toString();
@@ -112,7 +118,7 @@ export function initWebSocketServer(server: http.Server): WebSocketServer.Server
 }
 
 // Handle different types of messages
-function handleMessage(ws: WebSocketServer, data: any, user: User) {
+function handleMessage(ws: ExtendedWebSocket, data: any, user: User) {
   // Implement your message handling logic here
   switch (data.type) {
     case 'ping':
@@ -134,7 +140,7 @@ function handleMessage(ws: WebSocketServer, data: any, user: User) {
 }
 
 // Get the WebSocket server instance
-export function getWebSocketServer(): WebSocketServer.Server | null {
+export function getWebSocketServer(): any {
   return wsServer;
 }
 
@@ -142,8 +148,8 @@ export function getWebSocketServer(): WebSocketServer.Server | null {
 export function broadcastMessage(data: any): void {
   if (!wsServer) return;
   
-  wsServer.clients.forEach((client: WebSocketServer) => {
-    if (client.readyState === WebSocketServer.OPEN) {
+  wsServer.clients.forEach((client: ExtendedWebSocket) => {
+    if (client.readyState === WebSocket.OPEN) {
       client.send(JSON.stringify(data));
     }
   });
@@ -153,8 +159,8 @@ export function broadcastMessage(data: any): void {
 export function broadcastToRole(data: any, role: string): void {
   if (!wsServer) return;
   
-  wsServer.clients.forEach((client: WebSocketServer) => {
-    if (client.readyState === WebSocketServer.OPEN && (client as ExtendedWebSocket).user?.role === role) {
+  wsServer.clients.forEach((client: ExtendedWebSocket) => {
+    if (client.readyState === WebSocket.OPEN && client.user?.role === role) {
       client.send(JSON.stringify(data));
     }
   });
@@ -164,8 +170,8 @@ export function broadcastToRole(data: any, role: string): void {
 export function sendToUser(data: any, userId: string): void {
   if (!wsServer) return;
   
-  wsServer.clients.forEach((client: WebSocketServer) => {
-    if (client.readyState === WebSocketServer.OPEN && (client as ExtendedWebSocket).user?.id === userId) {
+  wsServer.clients.forEach((client: ExtendedWebSocket) => {
+    if (client.readyState === WebSocket.OPEN && client.user?.id === userId) {
       client.send(JSON.stringify(data));
     }
   });

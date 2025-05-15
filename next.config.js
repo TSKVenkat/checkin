@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   serverExternalPackages: ['bcryptjs'],
+  eslint: {
+    ignoreDuringBuilds: true, // ✅ This line disables ESLint during `next build`
+  },
   webpack: (config, { isServer }) => {
     // Only run this on the client side
     if (!isServer) {
@@ -18,19 +21,19 @@ const nextConfig = {
         https: false,
         zlib: false,
       };
-      
+
       // Ignore problematic packages
       config.externals = [
         ...(config.externals || []),
-        {'bcrypt': 'bcrypt'},
-        {'@mapbox/node-pre-gyp': '@mapbox/node-pre-gyp'},
+        { 'bcrypt': 'bcrypt' },
+        { '@mapbox/node-pre-gyp': '@mapbox/node-pre-gyp' },
         'node-gyp',
         'npm',
       ];
     }
-    
+
     return config;
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;

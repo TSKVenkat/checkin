@@ -1,0 +1,31 @@
+id,name,description,type,eventId,quantity,isLimited,claimableBy
+res_1,VIP Badge,Access badge for VIP attendees,badge,5b6a8b3e-5510-40cc-b961-aade214524f8,179,false,All
+res_2,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,5b6a8b3e-5510-40cc-b961-aade214524f8,95,true,Staff
+res_3,Resource 3,Generic resource 3 for the event,certificate,5b6a8b3e-5510-40cc-b961-aade214524f8,154,true,VIP
+res_4,Workshop Materials Set 4,Printed materials and digital resources for workshop sessions,materials,5b6a8b3e-5510-40cc-b961-aade214524f8,206,false,All
+res_5,Workshop Materials Set 5,Printed materials and digital resources for workshop sessions,materials,5b6a8b3e-5510-40cc-b961-aade214524f8,67,true,Speaker
+res_6,Workshop Materials Set 6,Printed materials and digital resources for workshop sessions,materials,5b6a8b3e-5510-40cc-b961-aade214524f8,66,true,All
+res_7,Welcome Kit 7,"Conference welcome kit with notebook, pen, and branded swag",kit,5b6a8b3e-5510-40cc-b961-aade214524f8,76,true,All
+res_8,Welcome Kit 8,"Conference welcome kit with notebook, pen, and branded swag",kit,5b6a8b3e-5510-40cc-b961-aade214524f8,151,true,All
+res_9,Welcome Kit 9,"Conference welcome kit with notebook, pen, and branded swag",kit,5b6a8b3e-5510-40cc-b961-aade214524f8,90,false,All
+res_10,Speaker Badge,Access badge for Speaker attendees,badge,5b6a8b3e-5510-40cc-b961-aade214524f8,120,true,All
+res_11,Resource 11,Generic resource 11 for the event,certificate,5b6a8b3e-5510-40cc-b961-aade214524f8,241,false,Sponsor
+res_12,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,5b6a8b3e-5510-40cc-b961-aade214524f8,116,true,Staff
+res_13,Water Bottle 13,Event branded Water Bottle,swag,5b6a8b3e-5510-40cc-b961-aade214524f8,207,false,Speaker
+res_14,Speaker Badge,Access badge for Speaker attendees,badge,5b6a8b3e-5510-40cc-b961-aade214524f8,195,false,All
+res_15,Workshop Materials Set 15,Printed materials and digital resources for workshop sessions,materials,5b6a8b3e-5510-40cc-b961-aade214524f8,185,false,Speaker
+res_16,Welcome Kit 16,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_2,129,true,All
+res_17,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,evt_1,137,true,Staff
+res_18,Lunch Voucher Day 4,Meal voucher valid for lunch on day 4 of the event,lunch,evt_15,146,true,VIP
+res_19,Lunch Voucher Day 5,Meal voucher valid for lunch on day 5 of the event,lunch,evt_12,227,true,Speaker
+res_20,VIP Lounge Access,Access pass for the VIP Lounge,access,evt_7,109,true,VIP
+res_21,Resource 21,Generic resource 21 for the event,certificate,evt_13,235,false,Staff
+res_22,Tote Bag 22,Event branded Tote Bag,swag,evt_7,206,false,Speaker
+res_23,Lunch Voucher Day 4,Meal voucher valid for lunch on day 4 of the event,lunch,evt_5,154,true,Sponsor
+res_24,Regular Badge,Access badge for Regular attendees,badge,evt_6,211,false,All
+res_25,After Party Access,Access pass for the After Party,access,evt_8,69,true,Staff
+res_9,Welcome Kit 9,"Conference welcome kit with notebook, pen, and branded swag",kit,5b6a8b3e-5510-40cc-b961-aade214524f8,90,false,All
+res_8,Welcome Kit 8,"Conference welcome kit with notebook, pen, and branded swag",kit,5b6a8b3e-5510-40cc-b961-aade214524f8,151,false,All
+res_9,Welcome Kit 9,"Conference welcome kit with notebook, pen, and branded swag",kit,5b6a8b3e-5510-40cc-b961-aade214524f8,90,false,All
+res_15,Workshop Materials Set 15,Printed materials and digital resources for workshop sessions,materials,5b6a8b3e-5510-40cc-b961-aade214524f8,100,false,Speaker
+res_14,Speaker Badge,Access badge for Speaker attendees,badge,5b6a8b3e-5510-40cc-b961-aade214524f8,245,false,All

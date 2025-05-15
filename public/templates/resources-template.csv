@@ -1,0 +1,151 @@
+id,name,description,type,eventId,quantity,isLimited,claimableBy
+res_1,Lunch Voucher Day 2,Meal voucher valid for lunch on day 2 of the event,lunch,evt_9,72,true,Staff
+res_2,Tote Bag 2,Event branded Tote Bag,swag,evt_13,50,false,VIP
+res_3,Special Workshop Access,Access pass for the Special Workshop,access,evt_4,89,true,VIP
+res_4,Resource 4,Generic resource 4 for the event,certificate,evt_14,415,true,VIP
+res_5,Lunch Voucher Day 1,Meal voucher valid for lunch on day 1 of the event,lunch,evt_18,354,true,Staff
+res_6,Tote Bag 6,Event branded Tote Bag,swag,evt_17,422,true,Staff
+res_7,Special Workshop Access,Access pass for the Special Workshop,access,evt_2,333,true,Sponsor
+res_8,T-Shirt 8,Event branded T-Shirt,swag,evt_1,90,false,Speaker
+res_9,VIP Badge,Access badge for VIP attendees,badge,evt_19,111,false,All
+res_10,Tote Bag 10,Event branded Tote Bag,swag,evt_2,279,true,All
+res_11,Special Workshop Access,Access pass for the Special Workshop,access,evt_4,140,true,All
+res_12,Regular Badge,Access badge for Regular attendees,badge,evt_11,88,false,All
+res_13,After Party Access,Access pass for the After Party,access,evt_11,375,true,All
+res_14,Speaker Badge,Access badge for Speaker attendees,badge,evt_18,135,false,All
+res_15,Staff Badge,Access badge for Staff attendees,badge,evt_14,218,true,All
+res_16,Welcome Kit 16,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_13,60,true,All
+res_17,Water Bottle 17,Event branded Water Bottle,swag,evt_2,171,true,Sponsor
+res_18,Welcome Kit 18,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_19,74,true,All
+res_19,Welcome Kit 19,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_7,84,true,All
+res_20,Welcome Kit 20,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_5,57,true,All
+res_21,Resource 21,Generic resource 21 for the event,certificate,evt_5,536,true,Staff
+res_22,Resource 22,Generic resource 22 for the event,certificate,evt_19,545,false,VIP
+res_23,Resource 23,Generic resource 23 for the event,certificate,evt_11,178,false,Speaker
+res_24,Resource 24,Generic resource 24 for the event,certificate,evt_5,480,true,VIP
+res_25,Water Bottle 25,Event branded Water Bottle,swag,evt_9,437,false,Sponsor
+res_26,Speaker Badge,Access badge for Speaker attendees,badge,evt_16,484,true,All
+res_27,Workshop Materials Set 27,Printed materials and digital resources for workshop sessions,materials,evt_15,121,true,Speaker
+res_28,T-Shirt 28,Event branded T-Shirt,swag,evt_13,91,false,Sponsor
+res_29,VIP Badge,Access badge for VIP attendees,badge,evt_2,406,true,All
+res_30,Speaker Badge,Access badge for Speaker attendees,badge,evt_14,114,false,All
+res_31,Resource 31,Generic resource 31 for the event,certificate,evt_16,519,true,VIP
+res_32,Regular Badge,Access badge for Regular attendees,badge,evt_19,531,true,All
+res_33,Resource 33,Generic resource 33 for the event,certificate,evt_7,53,false,Speaker
+res_34,Lunch Voucher Day 5,Meal voucher valid for lunch on day 5 of the event,lunch,evt_19,522,true,Speaker
+res_35,Staff Badge,Access badge for Staff attendees,badge,evt_20,236,true,All
+res_36,Resource 36,Generic resource 36 for the event,certificate,evt_6,98,true,Speaker
+res_37,Welcome Kit 37,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_2,340,true,All
+res_38,Networking Session Access,Access pass for the Networking Session,access,evt_9,403,true,VIP
+res_39,Workshop Materials Set 39,Printed materials and digital resources for workshop sessions,materials,evt_17,448,true,Speaker
+res_40,Welcome Kit 40,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_16,86,false,All
+res_41,Resource 41,Generic resource 41 for the event,certificate,evt_2,466,false,Sponsor
+res_42,Networking Session Access,Access pass for the Networking Session,access,evt_1,328,true,All
+res_43,Workshop Materials Set 43,Printed materials and digital resources for workshop sessions,materials,evt_19,504,true,Speaker
+res_44,VIP Lounge Access,Access pass for the VIP Lounge,access,evt_19,190,true,VIP
+res_45,After Party Access,Access pass for the After Party,access,evt_13,355,true,Staff
+res_46,Tote Bag 46,Event branded Tote Bag,swag,evt_7,531,false,Staff
+res_47,Workshop Materials Set 47,Printed materials and digital resources for workshop sessions,materials,evt_6,490,true,All
+res_48,Regular Badge,Access badge for Regular attendees,badge,evt_3,398,true,All
+res_49,Lunch Voucher Day 5,Meal voucher valid for lunch on day 5 of the event,lunch,evt_8,487,true,Speaker
+res_50,Tote Bag 50,Event branded Tote Bag,swag,evt_14,182,false,All
+res_51,Workshop Materials Set 51,Printed materials and digital resources for workshop sessions,materials,evt_14,112,true,All
+res_52,Resource 52,Generic resource 52 for the event,certificate,evt_6,205,false,Speaker
+res_53,Water Bottle 53,Event branded Water Bottle,swag,evt_4,177,true,Speaker
+res_54,Lunch Voucher Day 5,Meal voucher valid for lunch on day 5 of the event,lunch,evt_16,312,true,Staff
+res_55,Special Workshop Access,Access pass for the Special Workshop,access,evt_15,124,true,Sponsor
+res_56,Workshop Materials Set 56,Printed materials and digital resources for workshop sessions,materials,evt_8,450,false,All
+res_57,Resource 57,Generic resource 57 for the event,certificate,evt_13,166,true,Sponsor
+res_58,Speaker Badge,Access badge for Speaker attendees,badge,evt_12,116,false,All
+res_59,Special Workshop Access,Access pass for the Special Workshop,access,evt_4,286,true,Staff
+res_60,Welcome Kit 60,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_7,291,true,All
+res_61,Workshop Materials Set 61,Printed materials and digital resources for workshop sessions,materials,evt_16,67,true,Speaker
+res_62,Speaker Badge,Access badge for Speaker attendees,badge,evt_19,522,false,All
+res_63,Welcome Kit 63,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_14,254,true,All
+res_64,VIP Lounge Access,Access pass for the VIP Lounge,access,evt_8,334,true,VIP
+res_65,Resource 65,Generic resource 65 for the event,certificate,evt_6,307,false,VIP
+res_66,Networking Session Access,Access pass for the Networking Session,access,evt_1,459,true,Staff
+res_67,Welcome Kit 67,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_15,334,false,All
+res_68,Regular Badge,Access badge for Regular attendees,badge,evt_6,293,true,All
+res_69,Resource 69,Generic resource 69 for the event,certificate,evt_19,330,true,All
+res_70,Networking Session Access,Access pass for the Networking Session,access,evt_2,257,true,Staff
+res_71,Resource 71,Generic resource 71 for the event,certificate,evt_10,465,false,Staff
+res_72,T-Shirt 72,Event branded T-Shirt,swag,evt_17,359,true,Sponsor
+res_73,Lunch Voucher Day 4,Meal voucher valid for lunch on day 4 of the event,lunch,evt_15,469,true,Staff
+res_74,Workshop Materials Set 74,Printed materials and digital resources for workshop sessions,materials,evt_3,296,true,Speaker
+res_75,Special Workshop Access,Access pass for the Special Workshop,access,evt_5,259,true,Speaker
+res_76,Workshop Materials Set 76,Printed materials and digital resources for workshop sessions,materials,evt_20,502,true,Speaker
+res_77,Workshop Materials Set 77,Printed materials and digital resources for workshop sessions,materials,evt_17,231,false,All
+res_78,Speaker Badge,Access badge for Speaker attendees,badge,evt_5,188,true,All
+res_79,Staff Badge,Access badge for Staff attendees,badge,evt_10,491,true,All
+res_80,Lunch Voucher Day 1,Meal voucher valid for lunch on day 1 of the event,lunch,evt_12,223,true,Staff
+res_81,Workshop Materials Set 81,Printed materials and digital resources for workshop sessions,materials,evt_9,293,false,All
+res_82,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,evt_8,316,true,Staff
+res_83,Special Workshop Access,Access pass for the Special Workshop,access,evt_11,293,true,Staff
+res_84,Regular Badge,Access badge for Regular attendees,badge,evt_2,76,false,All
+res_85,VIP Badge,Access badge for VIP attendees,badge,evt_15,444,false,All
+res_86,Tote Bag 86,Event branded Tote Bag,swag,evt_20,215,false,VIP
+res_87,Notebook 87,Event branded Notebook,swag,evt_13,397,true,Speaker
+res_88,Welcome Kit 88,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_10,276,false,All
+res_89,After Party Access,Access pass for the After Party,access,evt_17,203,true,Speaker
+res_90,Tote Bag 90,Event branded Tote Bag,swag,evt_19,364,false,VIP
+res_91,Resource 91,Generic resource 91 for the event,certificate,evt_17,81,true,VIP
+res_92,Regular Badge,Access badge for Regular attendees,badge,evt_17,405,true,All
+res_93,Water Bottle 93,Event branded Water Bottle,swag,evt_10,309,true,Staff
+res_94,Tote Bag 94,Event branded Tote Bag,swag,evt_5,175,false,Speaker
+res_95,Staff Badge,Access badge for Staff attendees,badge,evt_1,523,false,All
+res_96,Regular Badge,Access badge for Regular attendees,badge,evt_17,278,true,All
+res_97,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,evt_20,415,true,VIP
+res_98,Welcome Kit 98,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_4,318,false,All
+res_99,Special Workshop Access,Access pass for the Special Workshop,access,evt_2,457,true,Speaker
+res_100,Resource 100,Generic resource 100 for the event,certificate,evt_7,121,true,All
+res_101,Workshop Materials Set 101,Printed materials and digital resources for workshop sessions,materials,evt_7,537,false,Speaker
+res_102,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,evt_10,417,true,Staff
+res_103,Resource 103,Generic resource 103 for the event,certificate,evt_1,219,false,Speaker
+res_104,T-Shirt 104,Event branded T-Shirt,swag,evt_8,344,false,Speaker
+res_105,Water Bottle 105,Event branded Water Bottle,swag,evt_12,352,false,All
+res_106,Tote Bag 106,Event branded Tote Bag,swag,evt_16,535,true,Speaker
+res_107,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,evt_3,54,true,Staff
+res_108,Workshop Materials Set 108,Printed materials and digital resources for workshop sessions,materials,evt_19,480,false,Speaker
+res_109,Workshop Materials Set 109,Printed materials and digital resources for workshop sessions,materials,evt_18,367,true,All
+res_110,Lunch Voucher Day 1,Meal voucher valid for lunch on day 1 of the event,lunch,evt_4,527,true,VIP
+res_111,Resource 111,Generic resource 111 for the event,certificate,evt_3,439,true,Sponsor
+res_112,VIP Lounge Access,Access pass for the VIP Lounge,access,evt_16,102,true,VIP
+res_113,After Party Access,Access pass for the After Party,access,evt_19,260,true,VIP
+res_114,Speaker Badge,Access badge for Speaker attendees,badge,evt_16,57,false,All
+res_115,Resource 115,Generic resource 115 for the event,certificate,evt_2,273,true,Speaker
+res_116,T-Shirt 116,Event branded T-Shirt,swag,evt_14,128,true,Staff
+res_117,Workshop Materials Set 117,Printed materials and digital resources for workshop sessions,materials,evt_8,488,true,All
+res_118,Workshop Materials Set 118,Printed materials and digital resources for workshop sessions,materials,evt_12,359,false,All
+res_119,Notebook 119,Event branded Notebook,swag,evt_19,447,false,VIP
+res_120,Lunch Voucher Day 1,Meal voucher valid for lunch on day 1 of the event,lunch,evt_13,188,true,Speaker
+res_77,Workshop Materials Set 77,Printed materials and digital resources for workshop sessions,materials,evt_17,231,true,All
+res_7,Special Workshop Access,Access pass for the Special Workshop,access,evt_2,162,true,Sponsor
+res_35,Staff Badge,Access badge for Staff attendees,badge,evt_20,236,true,All
+res_46,Tote Bag 46,Event branded Tote Bag,swag,evt_7,206,false,Staff
+res_104,T-Shirt 104,Event branded T-Shirt,swag,evt_8,279,false,Speaker
+res_32,Regular Badge,Access badge for Regular attendees,badge,evt_19,181,true,All
+res_93,Water Bottle 93,Event branded Water Bottle,swag,evt_10,309,true,Staff
+res_80,Lunch Voucher Day 1,Meal voucher valid for lunch on day 1 of the event,lunch,evt_12,460,true,Staff
+res_90,Tote Bag 90,Event branded Tote Bag,swag,evt_19,364,false,VIP
+res_49,Lunch Voucher Day 5,Meal voucher valid for lunch on day 5 of the event,lunch,evt_8,487,true,Speaker
+res_83,Special Workshop Access,Access pass for the Special Workshop,access,evt_11,391,true,Staff
+res_72,T-Shirt 72,Event branded T-Shirt,swag,evt_17,359,true,Sponsor
+res_32,Regular Badge,Access badge for Regular attendees,badge,evt_19,531,true,All
+res_22,Resource 22,Generic resource 22 for the event,certificate,evt_19,545,false,VIP
+res_75,Special Workshop Access,Access pass for the Special Workshop,access,evt_5,259,false,Speaker
+res_17,Water Bottle 17,Event branded Water Bottle,swag,evt_2,171,false,Sponsor
+res_109,Workshop Materials Set 109,Printed materials and digital resources for workshop sessions,materials,evt_18,367,false,All
+res_59,Special Workshop Access,Access pass for the Special Workshop,access,evt_4,303,true,Staff
+res_36,Resource 36,Generic resource 36 for the event,certificate,evt_6,98,true,Speaker
+res_26,Speaker Badge,Access badge for Speaker attendees,badge,evt_16,484,false,All
+res_42,Networking Session Access,Access pass for the Networking Session,access,evt_1,328,false,All
+res_95,Staff Badge,Access badge for Staff attendees,badge,evt_1,356,false,All
+res_22,Resource 22,Generic resource 22 for the event,certificate,evt_19,545,false,VIP
+res_16,Welcome Kit 16,"Conference welcome kit with notebook, pen, and branded swag",kit,evt_13,60,true,All
+res_46,Tote Bag 46,Event branded Tote Bag,swag,evt_7,531,true,Staff
+res_6,Tote Bag 6,Event branded Tote Bag,swag,evt_17,422,true,Staff
+res_102,Lunch Voucher Day 3,Meal voucher valid for lunch on day 3 of the event,lunch,evt_10,335,true,Staff
+res_64,VIP Lounge Access,Access pass for the VIP Lounge,access,evt_8,341,true,VIP
+res_2,Tote Bag 2,Event branded Tote Bag,swag,evt_13,50,true,VIP
+res_27,Workshop Materials Set 27,Printed materials and digital resources for workshop sessions,materials,evt_15,127,true,Speaker

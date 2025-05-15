@@ -3,13 +3,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { hashPassword } from '@/lib/auth/auth';
 import { generateOTP, sendVerificationEmail } from '@/lib/email/emailService';
-import { OTPType } from '@prisma/client';
+// Import OTPType enum directly from the Prisma client
+import { OTPType } from '@/generated/prisma';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
     // Parse request body
     const body = await req.json();
-    const { name, email, password, role = 'staff' } = body;
+    const { name, email, password, role = 'attendee' } = body;
     
     // Validate request
     if (!name || !email || !password) {
@@ -36,6 +37,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
     
+    // Enhanced password strength validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return NextResponse.json(
+        { 
+          success: false, 
+          message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+        },
+        { status: 400 }
+      );
+    }
+    
+    // Validate role
+    const validRoles = ['admin', 'manager', 'staff', 'speaker', 'attendee'];
+    if (!validRoles.includes(role)) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid role. Must be one of: admin, manager, staff, speaker, attendee' },
+        { status: 400 }
+      );
+    }
+    
     // Check if email already exists
     const existingStaff = await prisma.staff.findUnique({
       where: { email: email.toLowerCase() }
@@ -51,16 +73,34 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Hash password
     const passwordHash = await hashPassword(password);
     
-    // Set default permissions based on role
-    let permissions: string[] = ['view:own'];
-    if (role === 'admin') {
-      permissions = ['admin:all', 'edit:all', 'view:all'];
-    } else if (role === 'manager') {
-      permissions = ['edit:all', 'view:all'];
+    // Set permissions based on role
+    let permissions: string[] = [];
+    
+    switch (role) {
+      case 'admin':
+        permissions = ['admin:all', 'edit:all', 'view:all', 'check-in:process', 'distribution:process'];
+        break;
+      case 'manager':
+        permissions = ['edit:all', 'view:all', 'check-in:process', 'distribution:process'];
+        break;
+      case 'staff':
+        permissions = ['view:own', 'check-in:process', 'distribution:process'];
+        break;
+      case 'speaker':
+        permissions = ['view:own', 'view:schedule'];
+        break;
+      case 'attendee':
+        permissions = ['view:own', 'view:schedule'];
+        break;
+      default:
+        permissions = ['view:own'];
     }
     
-    // Generate OTP for email verification
-    const otp = generateOTP();
+    // Generate OTP for email verification - using enhanced security
+    const otp = generateOTP({ 
+      length: 8,
+      type: 'alphanumeric'
+    });
     
     // Use transaction to ensure both staff and OTP creation succeed
     const result = await prisma.$transaction(async (tx) => {
@@ -90,11 +130,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     });
     
     // Send verification email
-    await sendVerificationEmail(email, otp);
+    const emailSent = await sendVerificationEmail(email, otp);
     
-    return NextResponse.json({
+    if (!emailSent) {
+      console.error('Failed to send verification email');
+      // Continue anyway since the account was created
+    }
+    
+    // Create response - don't set auth token until email is verified
+    const response = NextResponse.json({
       success: true,
-      message: 'Account created successfully. Please verify your email.',
+      message: 'Account created successfully. Please check your email for verification instructions.',
       user: {
         id: result.id,
         name: result.name,
@@ -102,6 +148,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         role: result.role
       }
     });
+    
+    return response;
     
   } catch (error) {
     console.error('Signup error:', error);

@@ -1,0 +1,31 @@
+name,email,phone,role,company,title,registrationDate,tags,notes,eventId
+Mohana Kam,mohana.kam@gmail.com,+18886909230,VIP,CheckIn Technologies,Software Engineer,2025-04-24,"vip,tech,engineering","Special attendee, ensure priority check-in",5b6a8b3e-5510-40cc-b961-aade214524f8
+First1 Last1,attendee1@example.com,+11191396755,Sponsor,Acme Inc.,Designer,2025-05-04,design,Notes for First1 Last1: First-time attendee,5b6a8b3e-5510-40cc-b961-aade214524f8
+First2 Last2,attendee2@example.com,+17734422324,Speaker,FutureTech,CEO,2025-04-29,"business,marketing",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First3 Last3,attendee3@example.com,+12198923082,Speaker,MediaWorks,CTO,2025-05-03,"vip,tech",Notes for First3 Last3: Special dietary requirements,5b6a8b3e-5510-40cc-b961-aade214524f8
+First4 Last4,attendee4@example.com,+11575215219,Speaker,GlobalSoft,Product Manager,2025-04-16,"engineering,sales,product",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First5 Last5,attendee5@example.com,+15483317479,VIP,DevWorld,Marketing Director,2025-04-27,vip,,5b6a8b3e-5510-40cc-b961-aade214524f8
+First6 Last6,attendee6@example.com,+11750001962,VIP,FutureTech,CTO,2025-04-22,"tech,engineering",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First7 Last7,attendee7@example.com,+19845395582,VIP,MediaWorks,Software Engineer,2025-04-19,leadership,,5b6a8b3e-5510-40cc-b961-aade214524f8
+First8 Last8,attendee8@example.com,+19829076321,VIP,DevWorld,CTO,2025-05-10,"business,speaker",Notes for First8 Last8: Special dietary requirements,5b6a8b3e-5510-40cc-b961-aade214524f8
+First9 Last9,attendee9@example.com,+16513769590,Speaker,FutureTech,Marketing Director,2025-04-24,"vip,marketing,sales",Notes for First9 Last9: Speaking at session #6,5b6a8b3e-5510-40cc-b961-aade214524f8
+First10 Last10,attendee10@example.com,+15879879875,Speaker,FutureTech,Sales Manager,2025-04-25,"tech,business",Notes for First10 Last10: Special dietary requirements,5b6a8b3e-5510-40cc-b961-aade214524f8
+First11 Last11,attendee11@example.com,+11519745729,Sponsor,Acme Inc.,Marketing Director,2025-05-01,"engineering,business",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First12 Last12,attendee12@example.com,+16585891519,Staff,FutureTech,Designer,2025-04-15,"business,design",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First13 Last13,attendee13@example.com,+15431224964,Regular,MediaWorks,Marketing Director,2025-04-25,business,,5b6a8b3e-5510-40cc-b961-aade214524f8
+First14 Last14,attendee14@example.com,+11945997399,VIP,TechCorp,Product Manager,2025-05-08,sales,Notes for First14 Last14: Speaking at session #5,5b6a8b3e-5510-40cc-b961-aade214524f8
+First15 Last15,attendee15@example.com,+12395868174,Speaker,Acme Inc.,CEO,2025-04-26,sales,,5b6a8b3e-5510-40cc-b961-aade214524f8
+First16 Last16,attendee16@example.com,+15674410763,Speaker,MediaWorks,CEO,2025-05-13,"tech,business",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First17 Last17,attendee17@example.com,+13548675051,Regular,InnovateCo,Marketing Director,2025-04-22,"sales,tech",Notes for First17 Last17: Requires accessibility assistance,5b6a8b3e-5510-40cc-b961-aade214524f8
+First18 Last18,attendee18@example.com,+16755215737,Regular,DevWorld,Sales Manager,2025-04-23,"speaker,engineering,sales",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First19 Last19,attendee19@example.com,+17692957055,Staff,InnovateCo,Designer,2025-04-19,business,,5b6a8b3e-5510-40cc-b961-aade214524f8
+First20 Last20,attendee20@example.com,+16464199300,Speaker,DevWorld,Designer,2025-04-29,tech,,5b6a8b3e-5510-40cc-b961-aade214524f8
+First21 Last21,attendee21@example.com,+15837176359,Speaker,GlobalSoft,Sales Manager,2025-05-11,"product,marketing,engineering",Notes for First21 Last21: Requires accessibility assistance,5b6a8b3e-5510-40cc-b961-aade214524f8
+First22 Last22,attendee22@example.com,+16577009588,Staff,Acme Inc.,Product Manager,2025-04-29,"design,speaker",,5b6a8b3e-5510-40cc-b961-aade214524f8
+First23 Last23,attendee23@example.com,+11011082866,Staff,FutureTech,CTO,2025-04-24,"speaker,vip,sales",Notes for First23 Last23: Requires accessibility assistance,5b6a8b3e-5510-40cc-b961-aade214524f8
+First24 Last24,attendee24@example.com,+12210916540,VIP,DevWorld,Software Engineer,2025-05-03,"tech,business,sales",Notes for First24 Last24: Requires accessibility assistance,5b6a8b3e-5510-40cc-b961-aade214524f8
+FIRST8 LAST8,attendee8@example.com,+19829076321,VIP,DevWorld,CTO,2025-05-10,"business,speaker",Notes for First8 Last8: Special dietary requirements,5b6a8b3e-5510-40cc-b961-aade214524f8
+First3 Last3,attendee3@example.com,+1-219-892-3082,Speaker,MediaWorks,CTO,2025-05-03,"vip,tech",Notes for First3 Last3: Special dietary requirements,5b6a8b3e-5510-40cc-b961-aade214524f8
+First11 Last11,attendee11@example.com,+11519745729,Sponsor,FutureTech,CTO,2025-05-01,"engineering,business",,5b6a8b3e-5510-40cc-b961-aade214524f8
+FIRST10 LAST10,attendee10@example.com,+15879879875,Speaker,FutureTech,Sales Manager,2025-04-25,"tech,business",Notes for First10 Last10: Special dietary requirements,5b6a8b3e-5510-40cc-b961-aade214524f8
+First10 Last10,attendee10@example.com,+1-587-987-9875,Speaker,FutureTech,Sales Manager,2025-04-25,"tech,business",Notes for First10 Last10: Special dietary requirements,5b6a8b3e-5510-40cc-b961-aade214524f8

@@ -1,0 +1,71 @@
+id,name,description,type,eventId,quantity,isLimited,claimableBy
+res_1,Resource 1: materials,Description for resource 1: Available for distribution at the event,kit,evt_10,149,true,All
+res_2,Resource 2: swag,Description for resource 2: Available for distribution at the event,swag,evt_9,382,true,Staff
+res_3,Resource 3: badge,Description for resource 3: Available for distribution at the event,lunch,evt_4,421,false,Staff
+res_4,Resource 4: drink,Description for resource 4: Available for distribution at the event,swag,evt_5,281,true,All
+res_5,Resource 5: swag,Description for resource 5: Available for distribution at the event,swag,evt_10,505,true,VIP
+res_6,Resource 6: certificate,Description for resource 6: Available for distribution at the event,kit,evt_6,234,false,Speaker
+res_7,Resource 7: materials,Description for resource 7: Available for distribution at the event,certificate,evt_3,333,true,Sponsor
+res_8,Resource 8: kit,Description for resource 8: Available for distribution at the event,materials,evt_1,275,true,All
+res_9,Resource 9: swag,Description for resource 9: Available for distribution at the event,drink,evt_2,183,false,Speaker
+res_10,Resource 10: drink,Description for resource 10: Available for distribution at the event,swag,evt_10,354,true,Staff
+res_11,Resource 11: certificate,Description for resource 11: Available for distribution at the event,drink,evt_5,396,true,Staff
+res_12,Resource 12: materials,Description for resource 12: Available for distribution at the event,swag,evt_4,214,true,VIP
+res_13,Resource 13: kit,Description for resource 13: Available for distribution at the event,certificate,evt_3,348,false,Staff
+res_14,Resource 14: materials,Description for resource 14: Available for distribution at the event,materials,evt_7,104,true,Sponsor
+res_15,Resource 15: kit,Description for resource 15: Available for distribution at the event,swag,evt_7,455,true,Staff
+res_16,Resource 16: certificate,Description for resource 16: Available for distribution at the event,drink,evt_7,498,false,Speaker
+res_17,Resource 17: drink,Description for resource 17: Available for distribution at the event,swag,evt_7,380,true,VIP
+res_18,Resource 18: drink,Description for resource 18: Available for distribution at the event,certificate,evt_8,514,true,Staff
+res_19,Resource 19: swag,Description for resource 19: Available for distribution at the event,lunch,evt_10,472,false,VIP
+res_20,Resource 20: materials,Description for resource 20: Available for distribution at the event,kit,evt_1,332,false,Speaker
+res_21,Resource 21: lunch,Description for resource 21: Available for distribution at the event,certificate,evt_2,428,true,All
+res_22,Resource 22: materials,Description for resource 22: Available for distribution at the event,badge,evt_8,483,true,Sponsor
+res_23,Resource 23: kit,Description for resource 23: Available for distribution at the event,badge,evt_8,540,false,Staff
+res_24,Resource 24: lunch,Description for resource 24: Available for distribution at the event,materials,evt_1,430,false,VIP
+res_25,Resource 25: swag,Description for resource 25: Available for distribution at the event,kit,evt_6,276,true,Staff
+res_26,Resource 26: drink,Description for resource 26: Available for distribution at the event,badge,evt_5,419,true,Speaker
+res_27,Resource 27: materials,Description for resource 27: Available for distribution at the event,badge,evt_6,165,true,Sponsor
+res_28,Resource 28: certificate,Description for resource 28: Available for distribution at the event,swag,evt_8,417,false,Staff
+res_29,Resource 29: kit,Description for resource 29: Available for distribution at the event,certificate,evt_6,312,true,Sponsor
+res_30,Resource 30: certificate,Description for resource 30: Available for distribution at the event,kit,evt_2,325,false,VIP
+res_31,Resource 31: lunch,Description for resource 31: Available for distribution at the event,materials,evt_9,123,true,Speaker
+res_32,Resource 32: swag,Description for resource 32: Available for distribution at the event,drink,evt_9,389,true,Speaker
+res_33,Resource 33: swag,Description for resource 33: Available for distribution at the event,swag,evt_3,190,false,VIP
+res_34,Resource 34: materials,Description for resource 34: Available for distribution at the event,kit,evt_9,174,true,Speaker
+res_35,Resource 35: drink,Description for resource 35: Available for distribution at the event,drink,evt_7,296,false,VIP
+res_36,Resource 36: lunch,Description for resource 36: Available for distribution at the event,swag,evt_6,266,true,All
+res_37,Resource 37: certificate,Description for resource 37: Available for distribution at the event,certificate,evt_3,245,false,VIP
+res_38,Resource 38: badge,Description for resource 38: Available for distribution at the event,certificate,evt_1,364,true,Staff
+res_39,Resource 39: drink,Description for resource 39: Available for distribution at the event,drink,evt_6,149,true,Sponsor
+res_40,Resource 40: materials,Description for resource 40: Available for distribution at the event,materials,evt_4,235,false,Staff
+res_41,Resource 41: drink,Description for resource 41: Available for distribution at the event,lunch,evt_2,466,true,Staff
+res_42,Resource 42: drink,Description for resource 42: Available for distribution at the event,materials,evt_5,72,false,Staff
+res_43,Resource 43: materials,Description for resource 43: Available for distribution at the event,kit,evt_6,430,false,Sponsor
+res_44,Resource 44: materials,Description for resource 44: Available for distribution at the event,certificate,evt_10,294,false,Staff
+res_45,Resource 45: badge,Description for resource 45: Available for distribution at the event,swag,evt_8,287,false,Sponsor
+res_46,Resource 46: kit,Description for resource 46: Available for distribution at the event,drink,evt_10,406,false,Sponsor
+res_47,Resource 47: lunch,Description for resource 47: Available for distribution at the event,kit,evt_1,429,true,Sponsor
+res_48,Resource 48: lunch,Description for resource 48: Available for distribution at the event,lunch,evt_9,132,true,Staff
+res_49,Resource 49: certificate,Description for resource 49: Available for distribution at the event,drink,evt_5,318,false,All
+res_50,Resource 50: badge,Description for resource 50: Available for distribution at the event,kit,evt_8,263,false,Sponsor
+res_3,Resource 3: badge,Description for resource 3: Available for distribution at the event,lunch,evt_4,421,true,Staff
+res_47,Resource 47: lunch,Updated description for Resource 47: lunch: Limited stock available,kit,evt_1,429,true,Sponsor
+res_8,Resource 8: kit,Description for resource 8: Available for distribution at the event,materials,evt_1,232,true,All
+res_14,Resource 14: materials,Description for resource 14: Available for distribution at the event,materials,evt_7,104,false,Sponsor
+res_32,Resource 32: swag,Updated description for Resource 32: swag: Limited stock available,drink,evt_9,389,true,Speaker
+res_6,Resource 6: certificate,Description for resource 6: Available for distribution at the event,kit,evt_6,240,false,Speaker
+res_2,Resource 2: swag,Description for resource 2: Available for distribution at the event,swag,evt_9,382,false,Staff
+res_25,Resource 25: swag,Updated description for Resource 25: swag: Limited stock available,kit,evt_6,276,true,Staff
+res_44,Resource 44: materials,Description for resource 44: Available for distribution at the event,certificate,evt_10,328,false,Staff
+res_3,Resource 3: badge,Description for resource 3: Available for distribution at the event,lunch,evt_4,421,true,Staff
+res_26,Resource 26: drink,Updated description for Resource 26: drink: Limited stock available,badge,evt_5,419,true,Speaker
+res_9,Resource 9: swag,Description for resource 9: Available for distribution at the event,drink,evt_2,61,false,Speaker
+res_46,Resource 46: kit,Description for resource 46: Available for distribution at the event,drink,evt_10,406,true,Sponsor
+res_38,Resource 38: badge,Updated description for Resource 38: badge: Limited stock available,certificate,evt_1,364,true,Staff
+res_28,Resource 28: certificate,Description for resource 28: Available for distribution at the event,swag,evt_8,453,false,Staff
+res_37,Resource 37: certificate,Description for resource 37: Available for distribution at the event,certificate,evt_3,245,false,VIP
+res_12,Resource 12: materials,Description for resource 12: Available for distribution at the event,swag,evt_4,214,true,VIP
+res_10,Resource 10: drink,Description for resource 10: Available for distribution at the event,swag,evt_10,354,true,Staff
+res_32,Resource 32: swag,Description for resource 32: Available for distribution at the event,drink,evt_9,389,true,Speaker
+res_43,Resource 43: materials,Description for resource 43: Available for distribution at the event,kit,evt_6,430,false,Sponsor

@@ -1,109 +1,131 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import type { Theme } from '@/components/ThemeProvider';
+
+interface NavLink {
+  href: string;
+  label: string;
+  icon: string;
+}
 
 interface User {
   id: string;
   name: string;
   email: string;
   role: string;
-  permissions: string[];
+  avatar?: string;
 }
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  theme?: Theme;
+  setTheme?: (theme: Theme) => void;
 }
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ 
+  children, 
+  theme = 'light',
+  setTheme = () => {}
+}) => {
   const pathname = usePathname();
-  const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [navLinks, setNavLinks] = useState<NavLink[]>([]);
 
   useEffect(() => {
-    // Check user from localStorage on component mount
+    // Get user from localStorage - only in client-side useEffect
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const userData = JSON.parse(storedUser);
+        setUser(userData);
+        setNavLinks(getNavLinks(userData.role));
       } catch (e) {
-        console.error('Failed to parse user from localStorage');
+        console.error('Error parsing user data:', e);
         localStorage.removeItem('user');
       }
     }
-    setLoading(false);
   }, []);
 
-  // Close mobile menu when path changes
+  // Close sidebar when route changes on mobile
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    setIsSidebarOpen(false);
   }, [pathname]);
 
-  const handleLogout = async () => {
-    try {
-      const userId = user?.id;
-      await axios.post('/api/auth/logout', { userId });
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const toggleUserMenu = () => {
+    setIsUserMenuOpen(!isUserMenuOpen);
+  };
+
+  const getNavLinks = (role: string): NavLink[] => {
+    const links: NavLink[] = [];
+    
+    // Common links for all users
+    if (role === 'admin') {
+      links.push({ href: '/admin', label: 'Admin Dashboard', icon: 'dashboard' });
+      links.push({ href: '/admin/dashboard', label: 'Analytics', icon: 'dashboard' });
+      links.push({ href: '/admin/attendees', label: 'Attendees', icon: 'people' });
+      links.push({ href: '/admin/events', label: 'Events', icon: 'calendar' });
+      links.push({ href: '/admin/upload', label: 'Upload Data', icon: 'inventory' });
+      links.push({ href: '/admin/emergency', label: 'Emergency', icon: 'warning' });
+      links.push({ href: '/check-in', label: 'Check-In', icon: 'check-in' });
+    } else {
+      // For non-admin users (staff, manager)
+      links.push({ href: '/dashboard', label: 'Dashboard', icon: 'dashboard' });
+      links.push({ href: '/check-in', label: 'Check-In', icon: 'check-in' });
+      
+      // Staff also get distribution
+      if (role === 'staff' || role === 'manager') {
+        links.push({ href: '/distribution', label: 'Distribution', icon: 'inventory' });
+      }
+    }
+    
+    // Testing utilities (for all roles)
+    links.push({ href: '/test-login', label: 'Change Role', icon: 'settings' });
+    links.push({ href: '/test-instructions', label: 'Test Guide', icon: 'help' });
+    
+    return links;
+  };
+
+  const logout = () => {
+    // Use the API endpoint for logout
+    fetch('/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(() => {
+      // Clear local storage after successful logout
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      setUser(null);
-      router.push('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+      // Redirect to login page
+      window.location.href = '/login';
+    }).catch(error => {
+      console.error('Logout failed:', error);
+      // Fall back to client-side logout if API fails
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    });
   };
 
-  // Navigation links based on user role
-  const getNavLinks = () => {
-    const commonLinks = [
-      { href: '/', label: 'Home', icon: 'home' },
-    ];
-
-    // Add role-specific links
-    const roleLinks = [];
-    
-    if (user?.role === 'admin') {
-      roleLinks.push(
-        { href: '/admin/dashboard', label: 'Dashboard', icon: 'dashboard' },
-        { href: '/admin/attendees', label: 'Attendees', icon: 'people' },
-        { href: '/admin/upload', label: 'Upload CSV', icon: 'upload' },
-        { href: '/admin/events', label: 'Events', icon: 'event' },
-        { href: '/admin/emergency', label: 'Emergency', icon: 'warning' },
-      );
-    }
-    
-    if (user?.role === 'check-in' || user?.role === 'admin') {
-      roleLinks.push(
-        { href: '/check-in', label: 'Check-In', icon: 'check' },
-      );
-    }
-    
-    if (user?.role === 'distribution' || user?.role === 'admin') {
-      roleLinks.push(
-        { href: '/distribution', label: 'Distribution', icon: 'inventory' },
-      );
-    }
-
-    return [...commonLinks, ...roleLinks];
-  };
-
-  // Function to render an icon
-  const getIcon = (iconName: string) => {
+  const renderIcon = (iconName: string) => {
     switch (iconName) {
-      case 'home':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-          </svg>
-        );
       case 'dashboard':
         return (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+          </svg>
+        );
+      case 'check-in':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
           </svg>
         );
       case 'people':
@@ -112,16 +134,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
           </svg>
         );
-      case 'upload':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3-3m0 0l3 3m-3-3v12"></path>
-          </svg>
-        );
-      case 'event':
+      case 'calendar':
         return (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          </svg>
+        );
+      case 'settings':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
         );
       case 'warning':
@@ -130,178 +153,225 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
           </svg>
         );
-      case 'check':
-        return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-          </svg>
-        );
       case 'inventory':
         return (
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
           </svg>
         );
+      case 'help':
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        );
       default:
-        return null;
+        return (
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        );
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    router.push('/login');
-    return null;
-  }
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Navigation */}
-      <nav className="bg-white border-b shadow-sm">
+    <div className="min-h-screen bg-gray-900 dark:bg-gray-900 flex flex-col">
+      {/* Header */}
+      <header className="bg-white dark:bg-gray-800 shadow-sm z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex">
+              {/* Mobile menu button */}
+              <div className="flex items-center md:hidden">
+                <button
+                  type="button"
+                  className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                  onClick={toggleSidebar}
+                >
+                  <span className="sr-only">Open sidebar</span>
+                  {isSidebarOpen ? (
+                    <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+              
+              {/* Logo */}
               <div className="flex-shrink-0 flex items-center">
-                <Link href="/" className="text-xl font-bold text-blue-600">
-                  CheckIn
+                <Link href="/dashboard" className="flex items-center">
+                  <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <span className="ml-2 text-xl font-bold text-gray-900 dark:text-white">CheckIn</span>
                 </Link>
               </div>
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                {getNavLinks().map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
-                      pathname === link.href
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                    }`}
-                  >
-                    <span className="mr-1">{getIcon(link.icon)}</span>
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:items-center">
-              <div className="ml-3 relative">
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-600 mr-2">
-                    {user.name} ({user.role})
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div className="-mr-2 flex items-center sm:hidden">
+            
+            {/* Right side controls */}
+            <div className="flex items-center">
+              {/* Theme toggle */}
               <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100"
+                onClick={toggleTheme}
+                className="ml-4 px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <span className="sr-only">Open main menu</span>
-                {isMobileMenuOpen ? (
-                  <svg
-                    className="block h-6 w-6"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                {theme === 'dark' ? (
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fillRule="evenodd" clipRule="evenodd"></path>
                   </svg>
                 ) : (
-                  <svg
-                    className="block h-6 w-6"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
+                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
                   </svg>
                 )}
               </button>
+              
+              {/* Profile dropdown */}
+              <div className="ml-4 relative flex-shrink-0">
+                <div>
+                  <button
+                    type="button"
+                    className="bg-white dark:bg-gray-800 rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    id="user-menu-button"
+                    onClick={toggleUserMenu}
+                  >
+                    <span className="sr-only">Open user menu</span>
+                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                      <span className="text-sm font-medium text-gray-700">
+                        {user?.name ? user.name.charAt(0).toUpperCase() : '?'}
+                      </span>
+                    </div>
+                  </button>
+                </div>
+                
+                {/* Dropdown menu */}
+                {isUserMenuOpen && (
+                  <div
+                    className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none"
+                    role="menu"
+                    aria-orientation="vertical"
+                    aria-labelledby="user-menu-button"
+                  >
+                    <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700">
+                      <p className="font-medium">{user?.name}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                    </div>
+                    
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      Your Profile
+                    </Link>
+                    
+                    <Link href="/settings" className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                      Settings
+                    </Link>
+                    
+                    <button
+                      onClick={logout}
+                      className="w-full text-left block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {isMobileMenuOpen && (
-          <div className="sm:hidden">
-            <div className="pt-2 pb-3 space-y-1">
-              {getNavLinks().map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
-                    pathname === link.href
-                      ? 'bg-blue-50 border-blue-500 text-blue-700'
-                      : 'border-transparent text-gray-600 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-800'
-                  }`}
-                >
-                  <span className="mr-2">{getIcon(link.icon)}</span>
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-            <div className="pt-4 pb-3 border-t border-gray-200">
-              <div className="flex items-center px-4">
-                <div className="ml-3">
-                  <div className="text-base font-medium text-gray-800">{user.name}</div>
-                  <div className="text-sm font-medium text-gray-500">{user.email}</div>
-                </div>
+      </header>
+      
+      <div className="flex flex-1">
+        {/* Sidebar for desktop */}
+        <div className="hidden md:flex md:flex-shrink-0">
+          <div className="flex flex-col w-64">
+            <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+              <div className="flex-grow mt-5 flex flex-col">
+                <nav className="flex-1 px-2 space-y-1 bg-white dark:bg-gray-800">
+                  {navLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`${
+                        pathname === item.href
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                      } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
+                    >
+                      <div className="mr-3 flex-shrink-0 h-6 w-6 flex items-center justify-center">
+                        {renderIcon(item.icon)}
+                      </div>
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
               </div>
-              <div className="mt-3 space-y-1">
+            </div>
+          </div>
+        </div>
+        
+        {/* Mobile sidebar */}
+        {isSidebarOpen && (
+          <div className="md:hidden fixed inset-0 flex z-40">
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={toggleSidebar}></div>
+            <div className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-white dark:bg-gray-800">
+              <div className="absolute top-0 right-0 -mr-12 pt-2">
                 <button
-                  onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-base font-medium text-red-600 hover:bg-gray-100"
+                  type="button"
+                  className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                  onClick={toggleSidebar}
                 >
-                  Logout
+                  <span className="sr-only">Close sidebar</span>
+                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
+              </div>
+              
+              <div className="flex-1 h-0 overflow-y-auto">
+                <nav className="mt-5 px-2 space-y-1">
+                  {navLinks.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`${
+                        pathname === item.href
+                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+                          : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                      } group flex items-center px-2 py-2 text-base font-medium rounded-md`}
+                      onClick={toggleSidebar}
+                    >
+                      <div className="mr-4 flex-shrink-0 h-6 w-6 flex items-center justify-center">
+                        {renderIcon(item.icon)}
+                      </div>
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
               </div>
             </div>
           </div>
         )}
-      </nav>
-
-      {/* Main content */}
-      <main className="py-6">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {children}
+        
+        {/* Main content */}
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <main className="flex-1 relative overflow-y-auto focus:outline-none">
+            <div className="py-6">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+                {children}
+              </div>
+            </div>
+          </main>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t mt-auto py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-sm text-gray-500">
-            CheckIn © {new Date().getFullYear()} - Secure Event Management System
-          </p>
-        </div>
-      </footer>
+      </div>
     </div>
   );
-} 
+};
+
+export default DashboardLayout; 

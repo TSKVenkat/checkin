@@ -1,14 +1,11 @@
 // API route for forgot password
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db/dbConnect';
-import { Staff, OTP } from '@/lib/db/models';
+import prisma from '@/lib/prisma';
+import { OTPType } from '@/generated/prisma';
 import { generateOTP, sendPasswordResetEmail } from '@/lib/email/emailService';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    // Connect to database
-    await dbConnect();
-    
     // Parse request body
     const body = await req.json();
     const { email } = body;
@@ -22,33 +19,38 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     
     // Check if user exists
-    const staff = await Staff.findOne({ email: email.toLowerCase() });
+    const staff = await prisma.staff.findUnique({
+      where: { email: email.toLowerCase() }
+    });
+    
     if (!staff) {
-      // For security reasons, don't reveal if the email exists or not
-      return NextResponse.json({
-        success: true,
-        message: 'If your email is registered, you will receive a password reset code'
-      });
+      // Return success even if user doesn't exist (security best practice)
+      return NextResponse.json(
+        { success: true, message: 'If your email is registered, you will receive a password reset link' },
+        { status: 200 }
+      );
     }
     
-    // Delete any existing OTPs for this email and type
-    await OTP.deleteMany({
-      email: email.toLowerCase(),
-      type: 'password-reset'
-    });
-    
-    // Generate new OTP
+    // Generate OTP
     const otp = generateOTP();
     
-    // Store OTP
-    const newOTP = new OTP({
-      email: email.toLowerCase(),
-      otp,
-      type: 'password-reset',
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+    // Delete any existing OTPs for this email and type
+    await prisma.oTP.deleteMany({
+      where: {
+        email: email.toLowerCase(),
+        type: OTPType.password_reset
+      }
     });
     
-    await newOTP.save();
+    // Create new OTP
+    await prisma.oTP.create({
+      data: {
+        email: email.toLowerCase(),
+        otp,
+        type: OTPType.password_reset,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+      }
+    });
     
     // Send password reset email
     await sendPasswordResetEmail(email, otp);

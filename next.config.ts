@@ -5,7 +5,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['bcrypt']
   },
-  webpack: (config) => {
+  webpack: (config: any) => {
     // Ignore node-specific modules in the browser
     config.resolve.fallback = {
       ...config.resolve.fallback,

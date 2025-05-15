@@ -1,114 +1,115 @@
-// API route for listing attendees with pagination and filtering
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { authorize } from '@/lib/auth/auth';
+import { verifyAuth } from '@/lib/auth/auth-utils';
 
-export async function GET(req: NextRequest): Promise<NextResponse> {
+export async function GET(req: NextRequest) {
   try {
-    // Check authorization (allow admin and check-in roles)
-    const authResult = await authorize(['admin', 'check-in', 'distribution'])(req);
+    // Authorize the request
+    const authResult = await verifyAuth(req);
     
-    if (!authResult.authorized) {
+    if (!authResult.success) {
       return NextResponse.json(
         { success: false, message: authResult.message || 'Unauthorized' },
-        { status: 401 }
+        { status: authResult.status || 401 }
       );
     }
-    
-    // Get query parameters
-    const searchParams = req.nextUrl.searchParams;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const search = searchParams.get('search') || '';
-    const isCheckedIn = searchParams.get('isCheckedIn');
+
+    // Check if user has an allowed role (admin, manager, or staff)
+    if (!['admin', 'manager', 'staff'].includes(authResult.user.role)) {
+      return NextResponse.json(
+        { success: false, message: 'Insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    // Parse query parameters
+    const { searchParams } = new URL(req.url);
+    const eventId = searchParams.get('eventId');
     const role = searchParams.get('role');
-    const resourceClaimed = searchParams.get('resourceClaimed');
-    const resourceType = searchParams.get('resourceType') || 'lunch';
+    const isCheckedIn = searchParams.has('isCheckedIn') ? searchParams.get('isCheckedIn') === 'true' : undefined;
+    const searchTerm = searchParams.get('search');
+
+    // Build query conditions
+    const where: any = {};
     
-    // Calculate pagination
-    const skip = (page - 1) * limit;
+    if (eventId) {
+      where.eventId = eventId;
+    }
     
-    // Build Prisma where clause
-    let whereClause: any = {};
+    if (role) {
+      where.role = role;
+    }
     
-    // Add search filter if provided (search by name, email, or uniqueId)
-    if (search) {
-      whereClause.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { uniqueId: { contains: search, mode: 'insensitive' } }
+    if (isCheckedIn !== undefined) {
+      where.isCheckedIn = isCheckedIn;
+    }
+    
+    if (searchTerm) {
+      where.OR = [
+        { name: { contains: searchTerm, mode: 'insensitive' } },
+        { email: { contains: searchTerm, mode: 'insensitive' } },
+        { uniqueId: { contains: searchTerm, mode: 'insensitive' } }
       ];
     }
-    
-    // Add check-in filter if provided
-    if (isCheckedIn !== null && isCheckedIn !== undefined) {
-      whereClause.isCheckedIn = isCheckedIn === 'true';
-    }
-    
-    // Add role filter if provided
-    if (role) {
-      whereClause.role = role;
-    }
-    
-    // Add resource claimed filter if provided
-    if (resourceClaimed !== null && resourceClaimed !== undefined && resourceType) {
-      if (resourceType === 'lunch') {
-        whereClause.lunchClaimed = resourceClaimed === 'true';
-      } else if (resourceType === 'kit') {
-        whereClause.kitClaimed = resourceClaimed === 'true';
-      }
-    }
-    
-    // Get total count for pagination
-    const total = await prisma.attendee.count({
-      where: whereClause
-    });
-    
-    // Get attendees with pagination and filters
+
+    // Fetch attendees from database
     const attendees = await prisma.attendee.findMany({
-      where: whereClause,
-      orderBy: {
-        createdAt: 'desc'
-      },
-      skip,
-      take: limit,
+      where,
       select: {
         id: true,
         name: true,
         email: true,
-        phone: true,
         role: true,
         uniqueId: true,
+        phone: true,
         isCheckedIn: true,
         checkedInAt: true,
         lunchClaimed: true,
-        lunchClaimedAt: true,
         kitClaimed: true,
-        kitClaimedAt: true,
-        safetyConfirmed: true,
-        currentZone: true,
-        createdAt: true
+        eventId: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
-    
-    // Return paginated results
+
+    // Transform attendees to expected format
+    const formattedAttendees = attendees.map(attendee => ({
+      id: attendee.id,
+      name: attendee.name,
+      email: attendee.email,
+      role: attendee.role,
+      uniqueId: attendee.uniqueId,
+      phone: attendee.phone,
+      isCheckedIn: attendee.isCheckedIn,
+      checkedInAt: attendee.checkedInAt,
+      eventId: attendee.eventId,
+      resourceClaims: {
+        lunch: {
+          claimed: attendee.lunchClaimed,
+          claimedAt: null // Updated when we have the actual data
+        },
+        kit: {
+          claimed: attendee.kitClaimed,
+          claimedAt: null // Updated when we have the actual data
+        }
+      },
+      createdAt: attendee.createdAt,
+      updatedAt: attendee.updatedAt
+    }));
+
     return NextResponse.json({
       success: true,
-      data: {
-        attendees,
-        pagination: {
-          total,
-          page,
-          limit,
-          pages: Math.ceil(total / limit)
-        }
-      }
+      data: formattedAttendees,
+      total: formattedAttendees.length
     });
     
   } catch (error) {
-    console.error('List attendees error:', error);
+    console.error('Error fetching attendees:', error);
     return NextResponse.json(
-      { success: false, message: 'Internal server error' },
+      { success: false, message: 'Failed to fetch attendees data' },
       { status: 500 }
     );
   }

@@ -1,14 +1,11 @@
 // API route for reset password
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db/dbConnect';
-import { Staff, OTP } from '@/lib/db/models';
+import prisma from '@/lib/prisma';
+import { OTPType } from '@/generated/prisma';
 import { hashPassword } from '@/lib/auth/auth';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    // Connect to database
-    await dbConnect();
-    
     // Parse request body
     const body = await req.json();
     const { email, otp, newPassword } = body;
@@ -30,11 +27,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     
     // Find OTP record
-    const otpRecord = await OTP.findOne({
-      email: email.toLowerCase(),
-      otp,
-      type: 'password-reset',
-      expiresAt: { $gt: new Date() }
+    const otpRecord = await prisma.oTP.findFirst({
+      where: {
+        email: email.toLowerCase(),
+        otp,
+        type: OTPType.password_reset,
+        expiresAt: { gt: new Date() }
+      }
     });
     
     if (!otpRecord) {
@@ -45,7 +44,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
     
     // Find user
-    const staff = await Staff.findOne({ email: email.toLowerCase() });
+    const staff = await prisma.staff.findUnique({
+      where: { email: email.toLowerCase() }
+    });
     if (!staff) {
       return NextResponse.json(
         { success: false, message: 'User not found' },
@@ -56,23 +57,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     // Hash new password
     const passwordHash = await hashPassword(newPassword);
     
-    // Update password
-    staff.authData.passwordHash = passwordHash;
-    
-    // If user wasn't verified, verify them now
-    if (!staff.authData.emailVerified) {
-      staff.authData.emailVerified = true;
-    }
-    
-    // Save changes
-    await staff.save();
+    // Update password and verify email if needed
+    await prisma.staff.update({
+      where: { id: staff.id },
+      data: {
+        passwordHash,
+        emailVerified: true
+      }
+    });
     
     // Delete used OTP
-    await OTP.deleteOne({ _id: otpRecord._id });
+    await prisma.oTP.delete({
+      where: { id: otpRecord.id }
+    });
     
     // Invalidate all active sessions for security
-    staff.authData.activeSessions = [];
-    await staff.save();
+    await prisma.staffSession.deleteMany({
+      where: { staffId: staff.id }
+    });
     
     return NextResponse.json({
       success: true,

@@ -1,0 +1,4 @@
+id,firstName,lastName,email,phone,role,department,hireDate,permissions
+staff_1,John,Smith,john.smith@example.com,+11234567890,admin,Operations,2023-01-15,"admin,user_manage,event_manage"
+staff_2,Jane,Doe,jane.doe@example.com,+12345678901,manager,Registration,2023-02-20,"event_manage,attendee_manage"
+staff_3,Robert,Johnson,robert@example.com,+13456789012,staff,Technical Support,2023-03-10,"basic,attendee_checkin" 

@@ -1,96 +1,77 @@
-// API route for broadcasting emergency notifications
 import { NextRequest, NextResponse } from 'next/server';
-import dbConnect from '@/lib/db/dbConnect';
-import { Attendee, Event } from '@/lib/db/models';
-import { authorize } from '@/lib/auth/auth';
+import prisma from '@/lib/prisma';
+import { authorize } from '@/lib/auth/authorize';
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest) {
+  // Only admin and authorized staff can send broadcasts
+  const authResult = await authorize(['admin', 'manager'])(req);
+  
+  if (!authResult.authorized) {
+    return NextResponse.json(
+      { success: false, message: authResult.message || 'Unauthorized' },
+      { status: 403 }
+    );
+  }
+  
   try {
-    // Check authorization (only admin can broadcast messages)
-    const authResult = await authorize(['admin'])(req);
-    
-    if (!authResult.authorized) {
-      return NextResponse.json(
-        { success: false, message: authResult.message || 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-    
-    // Connect to database
-    await dbConnect();
-    
     // Parse request body
     const body = await req.json();
-    const { 
-      eventId, 
-      message, 
-      messageType, 
-      targetZones,
-      targetRoles,
-      staffId 
-    } = body;
-    
-    if (!eventId) {
-      return NextResponse.json(
-        { success: false, message: 'Event ID is required' },
-        { status: 400 }
-      );
-    }
+    const { message, recipients, priority, zones, eventId } = body;
     
     if (!message) {
       return NextResponse.json(
-        { success: false, message: 'Broadcast message is required' },
+        { success: false, message: 'Message content is required' },
         { status: 400 }
       );
     }
     
-    if (!staffId) {
-      return NextResponse.json(
-        { success: false, message: 'Staff ID is required' },
-        { status: 400 }
-      );
+    // Get the staff user from auth
+    const userId = authResult.user?.id;
+    
+    // Determine if this is an emergency broadcast
+    const isEmergency = priority === 'emergency';
+    
+    // Get all attendees or filter by zones
+    let attendeeFilter: any = {};
+    
+    if (zones && zones.length > 0) {
+      attendeeFilter.currentZone = { in: zones };
     }
     
-    // Get the event
-    const event = await Event.findById(eventId);
+    const attendees = await prisma.attendee.findMany({
+      where: attendeeFilter,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        currentZone: true
+      }
+    });
     
-    if (!event) {
+    if (attendees.length === 0) {
       return NextResponse.json(
-        { success: false, message: 'Event not found' },
+        { success: false, message: 'No attendees found matching the criteria' },
         { status: 404 }
       );
     }
     
-    // Build filters for targeted attendees
-    const filters: any = {};
+    // In a real application, we would send the messages to attendees
+    // via push notifications, email, SMS, etc.
+    // For this demo, we'll just log the message
     
-    // If targeting specific zones
-    if (targetZones && targetZones.length > 0) {
-      filters['emergencyStatus.currentZone'] = { $in: targetZones };
-    }
+    console.log(`Broadcasting message to ${attendees.length} attendees:`);
+    console.log(`Message: ${message}`);
+    console.log(`Priority: ${priority || 'normal'}`);
     
-    // If targeting specific roles
-    if (targetRoles && targetRoles.length > 0) {
-      filters.role = { $in: targetRoles };
-    }
-    
-    // Count affected attendees
-    const targetedAttendeeCount = await Attendee.countDocuments(filters);
-    
-    // In a real implementation, we would send actual notifications here
-    // For now, we'll just return a success response with the count
-    
-    // Log the broadcast action
-    console.log(`Broadcast sent by ${staffId}: ${message} to ${targetedAttendeeCount} attendees`);
+    // Record the broadcast in the database
+    // This would be in a Broadcast model in a real application
+    // For now, we'll just return success
     
     return NextResponse.json({
       success: true,
       message: 'Broadcast sent successfully',
-      data: {
-        messageType: messageType || 'general',
-        targetedAttendeeCount,
-        timestamp: new Date()
-      }
+      recipients: attendees.length,
+      timestamp: new Date().toISOString()
     });
     
   } catch (error) {

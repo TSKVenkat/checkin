@@ -1,270 +1,198 @@
 // API route for attendee check-in
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyQRCode } from '@/lib/qr/generator';
 import prisma from '@/lib/prisma';
-import { verifyQRCode } from '@/lib/qr/qrGenerator';
-import { authorize } from '@/lib/auth/auth';
+import { authorize } from '@/lib/auth/authorize';
+import { getUserFromRequest } from '@/lib/auth/auth';
+import { broadcastAttendeeCheckedIn } from '@/app/api/websocket';
 
-const EVENT_SECRET = process.env.EVENT_SECRET || 'your-event-secret-change-in-production';
+// Allowed roles for check-in
+const ALLOWED_ROLES = ['admin', 'manager', 'staff'];
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest) {
   try {
-    // Check authorization
-    const authResult = await authorize(['admin', 'check-in'])(req);
-    
-    if (!authResult.authorized) {
+    // Authorize the request
+    const authResult = await authorize(ALLOWED_ROLES)(req);
+  
+    if (!authResult.success || !authResult.authorized) {
       return NextResponse.json(
         { success: false, message: authResult.message || 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+    
+    // Use the user from auth result
+    const user = authResult.user;
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User identification failed' },
         { status: 401 }
       );
     }
-    
+
     // Parse request body
     const body = await req.json();
-    const { qrData, location, staffId, manualId } = body;
+    // Extract fields from the body - handle both formats (from QR scan and manual entry)
+    const { attendeeId, id, staffId, location, day, eventId } = body;
     
-    if (!location) {
+    // Ensure at least one identifier is provided
+    if (!attendeeId && !id) {
       return NextResponse.json(
-        { success: false, message: 'Check-in location is required' },
+        { success: false, message: 'Attendee ID is required' },
         { status: 400 }
       );
     }
     
-    if (!staffId) {
+    // Use the provided ID from either source
+    const targetId = attendeeId || id;
+    
+    // Try to parse as JSON if it's a QR code data
+    let parsedId = targetId;
+    if (typeof targetId === 'string' && targetId.startsWith('{') && targetId.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(targetId);
+        parsedId = parsed.id || parsed.attendeeId || targetId;
+      } catch (e) {
+        console.error('Failed to parse QR data:', e);
+        // Continue with original id
+      }
+    }
+    
+    // Find the attendee
+    const attendee = await prisma.attendee.findFirst({
+      where: {
+        OR: [
+          { id: parsedId },
+          { uniqueId: parsedId },
+          { email: parsedId }
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        isCheckedIn: true,
+        checkedInAt: true,
+        eventId: true,
+      }
+    });
+    
+    if (!attendee) {
       return NextResponse.json(
-        { success: false, message: 'Staff ID is required' },
-        { status: 400 }
+        { success: false, message: 'Attendee not found' },
+        { status: 404 }
       );
     }
     
-    // Handle QR code-based check-in
-    if (qrData) {
-      // Verify QR code
-      const verificationResult = verifyQRCode(qrData, EVENT_SECRET);
-      
-      if (!verificationResult.valid) {
-        return NextResponse.json(
-          { 
-            success: false, 
-            message: `Invalid QR code: ${verificationResult.reason || 'Unknown error'}` 
-          },
-          { status: 400 }
-        );
-      }
-      
-      const attendeeId = verificationResult.attendeeId;
-      
-      // Find attendee by unique ID
-      const attendee = await prisma.attendee.findUnique({
-        where: { uniqueId: attendeeId }
-      });
-      
-      if (!attendee) {
-        return NextResponse.json(
-          { success: false, message: 'Attendee not found' },
-          { status: 404 }
-        );
-      }
-      
-      // Check if already checked in
-      if (attendee.isCheckedIn) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'Attendee is already checked in',
-            attendee: {
-              name: attendee.name,
-              email: attendee.email,
-              checkedInAt: attendee.checkedInAt,
-              checkedInLocation: attendee.checkedInLocation
-            }
-          },
-          { status: 409 }
-        );
-      }
-      
-      // Create today's date for daily records
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // Use transaction to ensure all updates succeed or fail together
-      const updatedAttendee = await prisma.$transaction(async (tx) => {
-        // Perform check-in
-        const updated = await tx.attendee.update({
-          where: { id: attendee.id },
-          data: {
-            isCheckedIn: true,
-            checkedInAt: new Date(),
-            checkedInById: staffId,
-            checkedInLocation: location,
-            // Update emergency status
-            lastKnownCheckIn: new Date(),
-            currentZone: location
-          }
-        });
-        
-        // Check if there's already a daily record for today
-        const existingDailyRecord = await tx.dailyRecord.findFirst({
-          where: {
-            attendeeId: attendee.id,
-            date: {
-              gte: today,
-              lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) // next day
-            }
-          }
-        });
-        
-        // Create or update daily record
-        if (existingDailyRecord) {
-          await tx.dailyRecord.update({
-            where: { id: existingDailyRecord.id },
-            data: {
-              checkedIn: true,
-              checkedInAt: new Date()
-            }
-          });
-        } else {
-          await tx.dailyRecord.create({
-            data: {
-              date: today,
-              checkedIn: true,
-              checkedInAt: new Date(),
-              lunchClaimed: false,
-              kitClaimed: false,
-              attendeeId: attendee.id
-            }
-          });
-        }
-        
-        return updated;
-      });
-      
+    // Additional verification for QR code if needed
+    // We can extend this in the future for more secure QR codes
+    
+    // Check if attendee is already checked in
+    if (attendee.isCheckedIn) {
       return NextResponse.json({
-        success: true,
-        message: 'Attendee checked in successfully',
+        success: false,
+        message: 'Attendee already checked in',
         attendee: {
-          name: updatedAttendee.name,
-          email: updatedAttendee.email,
-          role: updatedAttendee.role,
-          checkedInAt: updatedAttendee.checkedInAt,
-          location: updatedAttendee.checkedInLocation
-        }
+          id: attendee.id,
+          name: attendee.name,
+          email: attendee.email,
+          checkedInAt: attendee.checkedInAt,
+        },
+        checkInStatus: 'duplicate'
       });
     }
-    
-    // Handle manual ID-based check-in
-    if (manualId) {
-      // Find attendee by email or unique ID
-      const attendee = await prisma.attendee.findFirst({
-        where: {
-          OR: [
-            { email: manualId },
-            { uniqueId: manualId }
-          ]
+
+    // Start a transaction to ensure data consistency
+    const updatedData = await prisma.$transaction(async (tx) => {
+      // Check in the attendee
+      const updatedAttendee = await tx.attendee.update({
+        where: { id: attendee.id },
+        data: {
+          isCheckedIn: true,
+          checkedInAt: new Date(),
+          checkedInById: user.id,
+          checkedInLocation: location || 'Main entrance',
+          lastKnownCheckIn: new Date(),
+          currentZone: location || 'Main entrance',
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isCheckedIn: true,
+          checkedInAt: true,
+          checkedInLocation: true,
+          eventId: true,
         }
       });
       
-      if (!attendee) {
-        return NextResponse.json(
-          { success: false, message: 'Attendee not found' },
-          { status: 404 }
-        );
-      }
+      // Log the activity
+      await tx.activityLog.create({
+        data: {
+          type: 'check-in',
+          action: 'created',
+          description: `Checked in attendee: ${attendee.name}`,
+          entityType: 'Attendee',
+          entityId: attendee.id,
+          staffId: user.id,
+          metadata: { 
+            location: location || 'Main entrance',
+            eventId: attendee.eventId || eventId || null
+          }
+        }
+      });
       
-      // Check if already checked in
-      if (attendee.isCheckedIn) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: 'Attendee is already checked in',
-            attendee: {
-              name: attendee.name,
-              email: attendee.email,
-              checkedInAt: attendee.checkedInAt,
-              checkedInLocation: attendee.checkedInLocation
+      // For multi-day events, create a daily record
+      if (day) {
+        const date = new Date(day);
+        
+        await tx.dailyRecord.upsert({
+          where: {
+            attendeeId_date: {
+              attendeeId: attendee.id,
+              date,
             }
           },
-          { status: 409 }
-        );
+          update: {
+            checkedIn: true,
+            checkedInAt: new Date(),
+          },
+          create: {
+            attendeeId: attendee.id,
+            date,
+            checkedIn: true,
+            checkedInAt: new Date(),
+          }
+        });
       }
       
-      // Create today's date for daily records
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // Use transaction to ensure all updates succeed or fail together
-      const updatedAttendee = await prisma.$transaction(async (tx) => {
-        // Perform check-in
-        const updated = await tx.attendee.update({
-          where: { id: attendee.id },
-          data: {
-            isCheckedIn: true,
-            checkedInAt: new Date(),
-            checkedInById: staffId,
-            checkedInLocation: location,
-            // Update emergency status
-            lastKnownCheckIn: new Date(),
-            currentZone: location
-          }
-        });
-        
-        // Check if there's already a daily record for today
-        const existingDailyRecord = await tx.dailyRecord.findFirst({
-          where: {
-            attendeeId: attendee.id,
-            date: {
-              gte: today,
-              lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) // next day
-            }
-          }
-        });
-        
-        // Create or update daily record
-        if (existingDailyRecord) {
-          await tx.dailyRecord.update({
-            where: { id: existingDailyRecord.id },
-            data: {
-              checkedIn: true,
-              checkedInAt: new Date()
-            }
-          });
-        } else {
-          await tx.dailyRecord.create({
-            data: {
-              date: today,
-              checkedIn: true,
-              checkedInAt: new Date(),
-              lunchClaimed: false,
-              kitClaimed: false,
-              attendeeId: attendee.id
-            }
-          });
-        }
-        
-        return updated;
+      return updatedAttendee;
+    });
+    
+    // After successful check-in, broadcast the event via websocket for real-time updates
+    try {
+      broadcastAttendeeCheckedIn({
+        attendeeId: updatedData.id,
+        name: updatedData.name,
+        checkedInAt: updatedData.checkedInAt || new Date(),
+        location: updatedData.checkedInLocation || undefined,
+        eventId: updatedData.eventId || undefined
       });
-      
-      return NextResponse.json({
-        success: true,
-        message: 'Attendee checked in successfully',
-        attendee: {
-          name: updatedAttendee.name,
-          email: updatedAttendee.email,
-          role: updatedAttendee.role,
-          checkedInAt: updatedAttendee.checkedInAt,
-          location: updatedAttendee.checkedInLocation
-        }
-      });
+    } catch (wsError) {
+      // Log but don't fail if websocket broadcast fails
+      console.error('Failed to broadcast check-in via websocket:', wsError);
     }
     
-    return NextResponse.json(
-      { success: false, message: 'Either QR data or manual ID is required' },
-      { status: 400 }
-    );
-    
+    return NextResponse.json({
+      success: true,
+      message: 'Attendee checked in successfully',
+      attendee: updatedData,
+      checkInStatus: 'success'
+    });
   } catch (error) {
     console.error('Check-in error:', error);
     return NextResponse.json(
-      { success: false, message: (error as Error).message || 'An error occurred during check-in' },
+      { success: false, message: `Server error: ${(error as Error).message}` },
       { status: 500 }
     );
   }

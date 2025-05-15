@@ -2,7 +2,7 @@
 import { parse } from 'csv-parse/sync';
 import { generateSecureId } from '../qr/idGenerator';
 import { generateSecureQRCode } from '../qr/qrGenerator';
-import { Attendee } from '../db/models';
+import prisma from '@/lib/prisma';
 import fs from 'fs';
 import path from 'path';
 
@@ -111,7 +111,7 @@ export async function processAttendeeCSV(
         }
         
         // Check for duplicate emails in database
-        const existingAttendee = await Attendee.findOne({ email: record.email });
+        const existingAttendee = await prisma.attendee.findUnique({ where: { email: record.email } });
         
         if (existingAttendee) {
           result.duplicates++;
@@ -129,32 +129,21 @@ export async function processAttendeeCSV(
         const qrCodeUrl = await generateSecureQRCode(uniqueId, eventSecret);
         
         // Create the attendee record
-        const newAttendee = new Attendee({
-          name: record.name,
-          email: record.email,
-          phone: record.phone,
-          role: record.role,
-          uniqueId,
-          qrCodeUrl,
-          registrationStatus: {
-            isCheckedIn: false
-          },
-          resourceClaims: {
-            lunch: {
-              claimed: false
-            },
-            kit: {
-              claimed: false
-            }
-          },
-          emergencyStatus: {
-            safetyConfirmed: false
-          },
-          dailyRecords: []
+        const newAttendee = await prisma.attendee.create({
+          data: {
+            name: record.name,
+            email: record.email,
+            phone: record.phone,
+            role: record.role,
+            uniqueId,
+            qrCodeUrl,
+            isCheckedIn: false,
+            lunchClaimed: false,
+            kitClaimed: false,
+            safetyConfirmed: false,
+            version: 1
+          }
         });
-        
-        // Save to database
-        await newAttendee.save();
         
         // Add to success list
         result.successful++;

@@ -20,10 +20,10 @@ model Attendee {
   name             String
   email            String   @unique
   phone            String
-  role             String
+  role             String   // Participant, VIP, Speaker, etc.
   uniqueId         String   @unique
   qrCodeUrl        String
-  version          Int      @default(1)
+  version          Int      @default(1) // For optimistic concurrency control
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
@@ -55,6 +55,24 @@ model Attendee {
   
   // Relations
   dailyRecords       DailyRecord[]
+  eventId            String?
+  event              Event?     @relation(fields: [eventId], references: [id])
+  
+  // QR Code Security
+  qrCodeSignature    String?    // HMAC signature for tamper-proof QR codes
+  qrCodeExpiry       DateTime?  // Expiry time for each QR code
+  deviceFingerprint  String?    // Associated device fingerprint
+  lastIpAddress      String?    // For IP binding
+  
+  // Optional extra information
+  tags               String[]   // For categorization and filtering
+  notes              String?    // Any special notes about the attendee
+  
+  @@index([email])
+  @@index([uniqueId])
+  @@index([isCheckedIn])
+  @@index([role])
+  @@index([eventId])
 }
 
 // For multi-day events tracking
@@ -72,46 +90,94 @@ model DailyRecord {
   kitClaimedAt   DateTime?
   
   @@unique([attendeeId, date])
+  @@index([date])
 }
 
 model Staff {
   id              String   @id @default(uuid())
   name            String
   email           String   @unique
-  role            String
-  permissions     String[]
+  role            String   // admin, manager, staff, speaker
+  permissions     String[] // Fine-grained permissions
   passwordHash    String
   lastLogin       DateTime?
   emailVerified   Boolean  @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   
-  // Session tracking
-  activeSessions  StaffSession[]
+  // Verification
+  verificationToken    String?  @unique
+  verificationExpires  DateTime?
+  
+  // Password reset
+  resetToken           String?  @unique
+  resetTokenExpires    DateTime?
+  
+  // Security settings
+  failedLoginAttempts  Int      @default(0)
+  lockedUntil          DateTime?
+  twoFactorEnabled     Boolean  @default(false)
+  twoFactorSecret      String?  // For 2FA secret key
+  
+  // Profile information
+  profileImage         String?
+  phoneNumber          String?
+  department           String?
   
   // Relations for staff checking in attendees
   checkedInAttendees      Attendee[] @relation("CheckedInAttendees")
   lunchClaimedAttendees   Attendee[] @relation("LunchClaimedAttendees")
   kitClaimedAttendees     Attendee[] @relation("KitClaimedAttendees")
   activatedEmergencies    Event[]    @relation("EmergencyActivatedBy")
+  
+  // Staff sessions for refresh tokens
+  sessions                StaffSession[]
+  activityLogs            ActivityLog[]
+  
+  @@index([email])
+  @@index([role])
 }
 
+// Model for storing staff refresh tokens
 model StaffSession {
-  id          String   @id @default(uuid())
-  token       String
-  device      String
-  expiresAt   DateTime
+  id          String    @id @default(uuid())
   staffId     String
-  staff       Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  staff       Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  token       String    // Hashed refresh token
+  device      String    // Device information
+  userAgent   String?   // Browser information
+  ipAddress   String?   // IP address
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime  @default(now())
+  isRevoked   Boolean   @default(false)
+  
+  @@index([token])
+  @@index([staffId])
+  @@index([expiresAt])
 }
 
 model Event {
   id              String   @id @default(uuid())
   name            String
+  description     String?
   startDate       DateTime
   endDate         DateTime
+  timezone        String   @default("UTC")
+  status          String   @default("draft") // draft, published, completed, cancelled
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  
+  // Event details
+  organizerId     String?
+  organizer       String?
+  venue           String?
+  maxAttendees    Int?
+  isPublic        Boolean  @default(false)
+  registrationUrl String?
+  bannerImageUrl  String?
+  logoUrl         String?
+  website         String?
   
   // Emergency status
   isEmergencyActive     Boolean  @default(false)
@@ -121,30 +187,86 @@ model Event {
   emergencyActivatedById String?
   emergencyActivatedBy   Staff?   @relation("EmergencyActivatedBy", fields: [emergencyActivatedById], references: [id])
   emergencyLastUpdated   DateTime?
+  emergencyInstructions  String?
   
   // Relations
   locations         EventLocation[]
   resources         Resource[]
+  attendees         Attendee[]
+  eventDays         EventDay[]
+  
+  @@index([startDate, endDate])
+  @@index([status])
+}
+
+// For tracking specific days in a multi-day event
+model EventDay {
+  id              String    @id @default(uuid())
+  eventId         String
+  event           Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  date            DateTime
+  name            String?   // Optional name like "Day 1: Welcome"
+  startTime       DateTime
+  endTime         DateTime
+  description     String?
+  
+  // Specific schedule for the day
+  checkInStart    DateTime?
+  checkInEnd      DateTime?
+  lunchStart      DateTime?
+  lunchEnd        DateTime?
+  
+  @@unique([eventId, date])
+  @@index([date])
 }
 
 model EventLocation {
   id          String   @id @default(uuid())
   name        String
-  type        String
+  type        String   // Main hall, Workshop room, etc.
   capacity    Int
   eventId     String
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  // Additional location details
+  description String?
+  floorLevel  String?
+  building    String?
+  address     String?
+  isActive    Boolean  @default(true)
+  mapImageUrl String?
+  
+  // Emergency information
+  exitRoutes  String?
+  
+  @@index([eventId])
+  @@index([type])
 }
 
 model Resource {
   id             String   @id @default(uuid())
   name           String
-  type           String
+  type           String   // lunch, kit, badge, etc.
   totalQuantity  Int
   claimedQuantity Int     @default(0)
-  lowThreshold   Int
+  remainingQuantity Int?  // Computed field for convenience
+  lowThreshold   Int      // Threshold for low stock alert
   eventId        String
   event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  // Additional fields for better resource management
+  description   String?
+  imageUrl      String?
+  location      String?   // Where is this resource stored/distributed
+  isActive      Boolean   @default(true)
+  costPerUnit   Float?
+  
+  // For tracking distribution schedules
+  distributionStart DateTime?
+  distributionEnd   DateTime?
+  
+  @@index([eventId])
+  @@index([type])
 }
 
 model OTP {
@@ -154,9 +276,78 @@ model OTP {
   type      OTPType
   expiresAt DateTime
   createdAt DateTime @default(now())
+  attempts  Int      @default(0)
+  isUsed    Boolean  @default(false)
+  
+  @@index([email])
+  @@index([expiresAt])
+}
+
+// Activity Log model for tracking system activities
+model ActivityLog {
+  id              String    @id @default(uuid())
+  type            String    // check-in, distribution, admin, security, emergency, system
+  action          String    // created, updated, deleted, view, login, logout, activate, deactivate, claim, export, import
+  description     String    // Human readable description
+  entityType      String?   // The type of entity affected (Attendee, Staff, Event)
+  entityId        String?   // ID of the affected entity
+  metadata        Json?     // Additional data about the activity
+  ipAddress       String?   // IP address from where action was performed
+  userAgent       String?   // Browser/device info
+  createdAt       DateTime  @default(now())
+  
+  // Who performed the action
+  staffId         String?
+  staff           Staff?    @relation(fields: [staffId], references: [id])
+  
+  // Additional information
+  eventId         String?
+  severity        String?   // info, warning, error, critical
+  
+  @@index([type])
+  @@index([staffId])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([severity])
+}
+
+// System settings for application configuration
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String
+  category  String   // appearance, security, notifications, etc.
+  dataType  String   // string, number, boolean, json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([category])
+}
+
+// For system-wide announcements and notifications
+model Announcement {
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  type        String    // info, warning, emergency, etc.
+  startDate   DateTime
+  endDate     DateTime?
+  isActive    Boolean   @default(true)
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Targeting
+  targetRoles String[]  // Which roles should see this
+  targetEvents String[] // Which events this applies to
+  
+  @@index([type])
+  @@index([isActive])
+  @@index([startDate, endDate])
 }
 
 enum OTPType {
   verification
   password_reset
+  two_factor
 }

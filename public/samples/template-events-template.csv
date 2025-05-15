@@ -1,0 +1,4 @@
+id,name,description,startDate,endDate,location,capacity,type,status,timezone,isPublic,organizer
+evt_1,Annual Tech Conference,Our flagship annual technology conference for developers and technology leaders.,2023-06-15,2023-06-17,Convention Center,500,Conference,upcoming,America/New_York,true,TechOrg Inc.
+evt_2,Developer Workshop,Hands-on workshop for web developers to learn the latest technologies.,2023-07-10,2023-07-11,Tech Campus,150,Workshop,draft,America/Chicago,false,Dev Community
+evt_3,Product Launch,Launching our new technology platform with industry partners.,2023-08-05,2023-08-05,Downtown Arena,300,Product Launch,upcoming,America/Los_Angeles,true,Product Team 

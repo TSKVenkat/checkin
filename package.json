@@ -9,27 +9,44 @@
     "lint": "next lint",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "postinstall": "prisma generate"
+    "prisma:seed": "ts-node prisma/seed.ts",
+    "postinstall": "prisma generate",
+    "setup": "node setup.js"
   },
   "dependencies": {
     "@prisma/client": "^6.7.0",
+    "@tanstack/react-query": "^5.76.0",
+    "@tanstack/react-query-devtools": "^5.76.0",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
     "axios": "^1.9.0",
+    "bcryptjs": "^2.4.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "crypto-js": "^4.2.0",
+    "csv-parse": "^5.6.0",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.11.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.510.0",
     "next": "15.3.2",
     "next-pwa": "^5.6.0",
     "nodemailer": "^6.9.13",
     "qrcode": "^1.5.4",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-query": "^3.39.3"
+    "react-icons": "^5.5.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.0",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/forms": "^0.5.7",
+    "@types/bcryptjs": "^2.4.6",
     "@types/crypto-js": "^4.2.1",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20",
@@ -37,10 +54,16 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.21",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
+    "postcss": "^8.5.3",
     "prisma": "^6.7.0",
-    "tailwindcss": "^4",
+    "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

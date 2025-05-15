@@ -1,0 +1,131 @@
+name,email,phone,role,company,title,registrationDate,tags,notes,eventId
+First1 Last1,attendee1@example.com,+17032739995,Staff,Acme Inc.,Software Engineer,2025-05-01,local,Notes for First1 Last1: Staff attendee from Acme Inc.,evt_1
+First2 Last2,attendee2@example.com,+11179685594,Staff,InnovateCo,Sales Manager,2025-05-09,"startup,tech,international",,evt_2
+First3 Last3,attendee3@example.com,+13627593784,Regular,DevWorld,Product Manager,2025-05-07,"tech,startup,international",Notes for First3 Last3: Regular attendee from DevWorld,evt_1
+First4 Last4,attendee4@example.com,+13224360957,Regular,Acme Inc.,Software Engineer,2025-04-18,"enterprise,executive",Notes for First4 Last4: Regular attendee from Acme Inc.,evt_1
+First5 Last5,attendee5@example.com,+15935115433,Sponsor,FutureTech,Marketing Director,2025-04-22,business,,evt_4
+First6 Last6,attendee6@example.com,+13425560304,VIP,InnovateCo,Software Engineer,2025-05-06,"startup,enterprise,development",,evt_1
+First7 Last7,attendee7@example.com,+14744191622,Speaker,InnovateCo,CTO,2025-05-14,enterprise,Notes for First7 Last7: Speaker attendee from InnovateCo,evt_2
+First8 Last8,attendee8@example.com,+15847709618,Sponsor,Acme Inc.,Product Manager,2025-04-18,business,Notes for First8 Last8: Sponsor attendee from Acme Inc.,evt_3
+First9 Last9,attendee9@example.com,+16653601526,Staff,GlobalSoft,Designer,2025-04-25,"executive,design",,evt_2
+First10 Last10,attendee10@example.com,+17486191030,Sponsor,GlobalSoft,CEO,2025-05-08,"executive,marketing",Notes for First10 Last10: Sponsor attendee from GlobalSoft,evt_4
+First11 Last11,attendee11@example.com,+14198954178,Staff,MediaWorks,Designer,2025-05-04,"marketing,startup",,evt_3
+First12 Last12,attendee12@example.com,+12379525185,Regular,GlobalSoft,Software Engineer,2025-04-21,international,Notes for First12 Last12: Regular attendee from GlobalSoft,evt_4
+First13 Last13,attendee13@example.com,+16140319084,Sponsor,TechCorp,Product Manager,2025-05-02,"design,enterprise",Notes for First13 Last13: Sponsor attendee from TechCorp,evt_5
+First14 Last14,attendee14@example.com,+14494571323,Speaker,MediaWorks,Designer,2025-05-11,enterprise,Notes for First14 Last14: Speaker attendee from MediaWorks,evt_5
+First15 Last15,attendee15@example.com,+14546938864,Sponsor,FutureTech,Software Engineer,2025-04-15,design,Notes for First15 Last15: Sponsor attendee from FutureTech,evt_4
+First16 Last16,attendee16@example.com,+12869627985,Regular,FutureTech,CTO,2025-05-07,"development,enterprise",Notes for First16 Last16: Regular attendee from FutureTech,evt_2
+First17 Last17,attendee17@example.com,+14504124941,VIP,Acme Inc.,Software Engineer,2025-04-16,"executive,marketing,development",Notes for First17 Last17: VIP attendee from Acme Inc.,evt_3
+First18 Last18,attendee18@example.com,+14204906465,Speaker,DevWorld,Software Engineer,2025-05-07,"enterprise,design",Notes for First18 Last18: Speaker attendee from DevWorld,evt_4
+First19 Last19,attendee19@example.com,+19952442188,Sponsor,TechCorp,Designer,2025-04-26,"design,tech",Notes for First19 Last19: Sponsor attendee from TechCorp,evt_3
+First20 Last20,attendee20@example.com,+17439761860,Speaker,MediaWorks,CTO,2025-04-23,development,Notes for First20 Last20: Speaker attendee from MediaWorks,evt_3
+First21 Last21,attendee21@example.com,+14921347892,VIP,MediaWorks,CTO,2025-04-20,international,Notes for First21 Last21: VIP attendee from MediaWorks,evt_5
+First22 Last22,attendee22@example.com,+19972317779,VIP,GlobalSoft,Marketing Director,2025-05-09,development,Notes for First22 Last22: VIP attendee from GlobalSoft,evt_2
+First23 Last23,attendee23@example.com,+18081349124,Regular,InnovateCo,Sales Manager,2025-05-11,development,Notes for First23 Last23: Regular attendee from InnovateCo,evt_2
+First24 Last24,attendee24@example.com,+19113833361,Regular,Acme Inc.,CTO,2025-05-06,"development,local",Notes for First24 Last24: Regular attendee from Acme Inc.,evt_1
+First25 Last25,attendee25@example.com,+18033904046,Regular,MediaWorks,Software Engineer,2025-04-30,local,Notes for First25 Last25: Regular attendee from MediaWorks,evt_5
+First26 Last26,attendee26@example.com,+15716941507,Regular,Acme Inc.,Sales Manager,2025-04-20,"startup,business",,evt_5
+First27 Last27,attendee27@example.com,+17310845007,Speaker,TechCorp,Software Engineer,2025-05-07,"international,design",Notes for First27 Last27: Speaker attendee from TechCorp,evt_5
+First28 Last28,attendee28@example.com,+13923611875,Sponsor,TechCorp,Product Manager,2025-05-03,"development,international",,evt_5
+First29 Last29,attendee29@example.com,+18359762457,Staff,GlobalSoft,CEO,2025-04-17,"executive,design,startup",Notes for First29 Last29: Staff attendee from GlobalSoft,evt_5
+First30 Last30,attendee30@example.com,+15657684110,VIP,DevWorld,CTO,2025-05-05,"local,design",,evt_3
+First31 Last31,attendee31@example.com,+15882668588,Regular,Acme Inc.,CTO,2025-04-30,"local,design",Notes for First31 Last31: Regular attendee from Acme Inc.,evt_5
+First32 Last32,attendee32@example.com,+13931256126,Regular,Acme Inc.,Marketing Director,2025-05-07,"enterprise,business,startup",Notes for First32 Last32: Regular attendee from Acme Inc.,evt_4
+First33 Last33,attendee33@example.com,+15284829588,Speaker,DevWorld,Marketing Director,2025-04-27,"enterprise,startup",,evt_5
+First34 Last34,attendee34@example.com,+16426096576,Speaker,MediaWorks,Product Manager,2025-05-01,"tech,executive",Notes for First34 Last34: Speaker attendee from MediaWorks,evt_1
+First35 Last35,attendee35@example.com,+14583386016,Staff,Acme Inc.,Designer,2025-05-09,"design,marketing",Notes for First35 Last35: Staff attendee from Acme Inc.,evt_5
+First36 Last36,attendee36@example.com,+14292493945,VIP,InnovateCo,Product Manager,2025-05-07,international,Notes for First36 Last36: VIP attendee from InnovateCo,evt_2
+First37 Last37,attendee37@example.com,+17344290984,Speaker,InnovateCo,Designer,2025-05-03,"executive,business",Notes for First37 Last37: Speaker attendee from InnovateCo,evt_1
+First38 Last38,attendee38@example.com,+13091704817,Staff,InnovateCo,Designer,2025-04-25,tech,Notes for First38 Last38: Staff attendee from InnovateCo,evt_3
+First39 Last39,attendee39@example.com,+13299202693,Regular,TechCorp,CEO,2025-04-16,business,Notes for First39 Last39: Regular attendee from TechCorp,evt_5
+First40 Last40,attendee40@example.com,+11496678429,VIP,TechCorp,Product Manager,2025-05-02,"executive,development,tech",,evt_3
+First41 Last41,attendee41@example.com,+13453488736,Regular,Acme Inc.,CTO,2025-05-14,"design,international",Notes for First41 Last41: Regular attendee from Acme Inc.,evt_2
+First42 Last42,attendee42@example.com,+18700372914,Sponsor,TechCorp,CTO,2025-04-30,"executive,design",Notes for First42 Last42: Sponsor attendee from TechCorp,evt_5
+First43 Last43,attendee43@example.com,+14598237144,Speaker,InnovateCo,CTO,2025-05-10,enterprise,Notes for First43 Last43: Speaker attendee from InnovateCo,evt_2
+First44 Last44,attendee44@example.com,+17760632473,Regular,DevWorld,Designer,2025-05-12,"marketing,tech",Notes for First44 Last44: Regular attendee from DevWorld,evt_2
+First45 Last45,attendee45@example.com,+17110016239,Speaker,FutureTech,Marketing Director,2025-05-06,"business,international,marketing",Notes for First45 Last45: Speaker attendee from FutureTech,evt_2
+First46 Last46,attendee46@example.com,+13259964147,Speaker,Acme Inc.,Marketing Director,2025-05-02,"marketing,executive",Notes for First46 Last46: Speaker attendee from Acme Inc.,evt_1
+First47 Last47,attendee47@example.com,+14088694886,Sponsor,GlobalSoft,Product Manager,2025-04-15,international,,evt_2
+First48 Last48,attendee48@example.com,+12344484912,Speaker,TechCorp,Software Engineer,2025-05-04,"startup,business",,evt_1
+First49 Last49,attendee49@example.com,+12558923434,VIP,GlobalSoft,Marketing Director,2025-05-14,enterprise,Notes for First49 Last49: VIP attendee from GlobalSoft,evt_1
+First50 Last50,attendee50@example.com,+17031329126,VIP,MediaWorks,Designer,2025-05-14,design,Notes for First50 Last50: VIP attendee from MediaWorks,evt_3
+First51 Last51,attendee51@example.com,+12632311300,Regular,DevWorld,CEO,2025-04-21,local,Notes for First51 Last51: Regular attendee from DevWorld,evt_3
+First52 Last52,attendee52@example.com,+19607413261,Staff,Acme Inc.,CTO,2025-04-27,marketing,Notes for First52 Last52: Staff attendee from Acme Inc.,evt_2
+First53 Last53,attendee53@example.com,+11599554323,Speaker,TechCorp,CTO,2025-05-11,"enterprise,tech",Notes for First53 Last53: Speaker attendee from TechCorp,evt_1
+First54 Last54,attendee54@example.com,+14039504008,Speaker,InnovateCo,Designer,2025-05-11,"development,business",Notes for First54 Last54: Speaker attendee from InnovateCo,evt_5
+First55 Last55,attendee55@example.com,+11982386819,Speaker,InnovateCo,Marketing Director,2025-04-17,"enterprise,marketing,design",Notes for First55 Last55: Speaker attendee from InnovateCo,evt_5
+First56 Last56,attendee56@example.com,+19659885899,Speaker,Acme Inc.,Sales Manager,2025-05-06,startup,Notes for First56 Last56: Speaker attendee from Acme Inc.,evt_1
+First57 Last57,attendee57@example.com,+14752442863,Sponsor,FutureTech,CTO,2025-04-20,international,Notes for First57 Last57: Sponsor attendee from FutureTech,evt_5
+First58 Last58,attendee58@example.com,+13957527012,Regular,FutureTech,Designer,2025-04-14,tech,Notes for First58 Last58: Regular attendee from FutureTech,evt_2
+First59 Last59,attendee59@example.com,+17466163924,Sponsor,DevWorld,Product Manager,2025-05-14,"international,marketing",Notes for First59 Last59: Sponsor attendee from DevWorld,evt_3
+First60 Last60,attendee60@example.com,+17022650651,Regular,Acme Inc.,CTO,2025-05-13,executive,Notes for First60 Last60: Regular attendee from Acme Inc.,evt_2
+First61 Last61,attendee61@example.com,+13153086900,Sponsor,FutureTech,Designer,2025-04-28,design,Notes for First61 Last61: Sponsor attendee from FutureTech,evt_3
+First62 Last62,attendee62@example.com,+19733681287,VIP,Acme Inc.,Marketing Director,2025-05-08,executive,,evt_4
+First63 Last63,attendee63@example.com,+12471951655,Speaker,DevWorld,Marketing Director,2025-04-25,"international,startup,development",Notes for First63 Last63: Speaker attendee from DevWorld,evt_1
+First64 Last64,attendee64@example.com,+15146690043,Sponsor,GlobalSoft,CEO,2025-04-16,"local,design",,evt_2
+First65 Last65,attendee65@example.com,+14819005278,Staff,FutureTech,Software Engineer,2025-04-17,international,Notes for First65 Last65: Staff attendee from FutureTech,evt_1
+First66 Last66,attendee66@example.com,+13259303453,Speaker,MediaWorks,Software Engineer,2025-04-30,"executive,international,business",Notes for First66 Last66: Speaker attendee from MediaWorks,evt_4
+First67 Last67,attendee67@example.com,+18198878583,Regular,DevWorld,Product Manager,2025-05-09,tech,Notes for First67 Last67: Regular attendee from DevWorld,evt_5
+First68 Last68,attendee68@example.com,+15824835348,VIP,InnovateCo,Marketing Director,2025-04-25,development,Notes for First68 Last68: VIP attendee from InnovateCo,evt_1
+First69 Last69,attendee69@example.com,+18489734540,Speaker,DevWorld,Product Manager,2025-05-02,"local,international,business",Notes for First69 Last69: Speaker attendee from DevWorld,evt_4
+First70 Last70,attendee70@example.com,+12194472518,Sponsor,FutureTech,Product Manager,2025-04-27,"development,executive,enterprise",,evt_5
+First71 Last71,attendee71@example.com,+16296404280,Regular,FutureTech,CTO,2025-05-03,startup,Notes for First71 Last71: Regular attendee from FutureTech,evt_2
+First72 Last72,attendee72@example.com,+12392992411,VIP,DevWorld,Product Manager,2025-05-13,"international,startup",Notes for First72 Last72: VIP attendee from DevWorld,evt_2
+First73 Last73,attendee73@example.com,+18116632880,Staff,FutureTech,Product Manager,2025-05-14,"business,startup",Notes for First73 Last73: Staff attendee from FutureTech,evt_5
+First74 Last74,attendee74@example.com,+14706126908,Staff,GlobalSoft,Product Manager,2025-05-06,local,,evt_3
+First75 Last75,attendee75@example.com,+19275334865,Regular,MediaWorks,Marketing Director,2025-05-03,"executive,design",,evt_5
+First76 Last76,attendee76@example.com,+17013397315,Regular,Acme Inc.,CEO,2025-05-02,"marketing,development,tech",,evt_1
+First77 Last77,attendee77@example.com,+16577419152,Sponsor,TechCorp,Marketing Director,2025-05-05,"marketing,executive,international",Notes for First77 Last77: Sponsor attendee from TechCorp,evt_1
+First78 Last78,attendee78@example.com,+13788821437,Staff,MediaWorks,Software Engineer,2025-04-22,development,,evt_3
+First79 Last79,attendee79@example.com,+14802681401,Speaker,Acme Inc.,Sales Manager,2025-05-08,"marketing,design,startup",Notes for First79 Last79: Speaker attendee from Acme Inc.,evt_5
+First80 Last80,attendee80@example.com,+15203462682,VIP,FutureTech,Sales Manager,2025-05-09,"design,development,international",Notes for First80 Last80: VIP attendee from FutureTech,evt_5
+First81 Last81,attendee81@example.com,+18045446513,Speaker,FutureTech,Designer,2025-05-08,"tech,business,international",Notes for First81 Last81: Speaker attendee from FutureTech,evt_4
+First82 Last82,attendee82@example.com,+15884498391,Staff,Acme Inc.,Designer,2025-05-05,"design,enterprise",,evt_3
+First83 Last83,attendee83@example.com,+14641501812,Staff,Acme Inc.,Software Engineer,2025-05-07,"design,executive",Notes for First83 Last83: Staff attendee from Acme Inc.,evt_5
+First84 Last84,attendee84@example.com,+11708370199,Sponsor,TechCorp,CEO,2025-04-17,tech,Notes for First84 Last84: Sponsor attendee from TechCorp,evt_4
+First85 Last85,attendee85@example.com,+17545578745,Sponsor,GlobalSoft,Product Manager,2025-05-04,"executive,business",,evt_5
+First86 Last86,attendee86@example.com,+19101972742,Speaker,DevWorld,Sales Manager,2025-05-09,marketing,Notes for First86 Last86: Speaker attendee from DevWorld,evt_1
+First87 Last87,attendee87@example.com,+15708092901,Regular,Acme Inc.,Sales Manager,2025-04-16,"international,tech",Notes for First87 Last87: Regular attendee from Acme Inc.,evt_4
+First88 Last88,attendee88@example.com,+19687759589,Staff,Acme Inc.,Designer,2025-04-19,business,,evt_1
+First89 Last89,attendee89@example.com,+19675464750,VIP,TechCorp,CEO,2025-04-27,"international,tech",Notes for First89 Last89: VIP attendee from TechCorp,evt_1
+First90 Last90,attendee90@example.com,+17783370306,Speaker,TechCorp,Designer,2025-04-18,"design,tech,business",,evt_5
+First91 Last91,attendee91@example.com,+13817996616,Regular,MediaWorks,CTO,2025-05-13,tech,Notes for First91 Last91: Regular attendee from MediaWorks,evt_4
+First92 Last92,attendee92@example.com,+17003732164,Sponsor,Acme Inc.,CEO,2025-04-17,"executive,local",Notes for First92 Last92: Sponsor attendee from Acme Inc.,evt_2
+First93 Last93,attendee93@example.com,+12413765132,VIP,TechCorp,Designer,2025-04-23,"business,executive,development",Notes for First93 Last93: VIP attendee from TechCorp,evt_3
+First94 Last94,attendee94@example.com,+12380496747,Regular,TechCorp,Product Manager,2025-04-25,local,Notes for First94 Last94: Regular attendee from TechCorp,evt_3
+First95 Last95,attendee95@example.com,+19240904888,VIP,DevWorld,Sales Manager,2025-04-18,"design,marketing",,evt_2
+First96 Last96,attendee96@example.com,+15176795664,Regular,Acme Inc.,Sales Manager,2025-05-03,"development,international",Notes for First96 Last96: Regular attendee from Acme Inc.,evt_2
+First97 Last97,attendee97@example.com,+18763670642,VIP,GlobalSoft,CTO,2025-04-30,"tech,startup,development",Notes for First97 Last97: VIP attendee from GlobalSoft,evt_2
+First98 Last98,attendee98@example.com,+14418041376,VIP,DevWorld,CEO,2025-04-28,"enterprise,marketing",Notes for First98 Last98: VIP attendee from DevWorld,evt_2
+First99 Last99,attendee99@example.com,+19684673694,VIP,GlobalSoft,Product Manager,2025-05-07,"design,local",Notes for First99 Last99: VIP attendee from GlobalSoft,evt_3
+First100 Last100,attendee100@example.com,+14541686899,Staff,MediaWorks,CEO,2025-05-07,local,,evt_5
+First21  Last21,attendee21@example.com,+14921347892,VIP,MediaWorks,CTO,2025-04-20,international,Notes for First21 Last21: VIP attendee from MediaWorks,evt_5
+First18 Last18,attendee18@example.com,+14204906465,Sponsor,DevWorld,Software Engineer,2025-05-07,"enterprise,design",Notes for First18 Last18: Speaker attendee from DevWorld,evt_4
+First21 Last21,attendee21@example.com,+14921347892,VIP,DevWorld,CTO,2025-04-20,international,Notes for First21 Last21: VIP attendee from MediaWorks,evt_5
+FIRST93 LAST93,attendee93@example.com,+12413765132,VIP,TechCorp,Designer,2025-04-23,"business,executive,development",Notes for First93 Last93: VIP attendee from TechCorp,evt_3
+First84  Last84,attendee84@example.com,+11708370199,Sponsor,TechCorp,CEO,2025-04-17,tech,Notes for First84 Last84: Sponsor attendee from TechCorp,evt_4
+First58 Last58,attendee58@example.com,+13957527012,VIP,FutureTech,Designer,2025-04-14,tech,Notes for First58 Last58: Regular attendee from FutureTech,evt_1
+First53 Last53,attendee53@example.com,+11599554323,Speaker,GlobalSoft,CTO,2025-05-11,"enterprise,tech",Notes for First53 Last53: Speaker attendee from TechCorp,evt_1
+FIRST33 LAST33,attendee33@example.com,+15284829588,Speaker,DevWorld,Marketing Director,2025-04-27,"enterprise,startup",,evt_5
+First5  Last5,attendee5@example.com,+15935115433,Sponsor,FutureTech,Marketing Director,2025-04-22,business,,evt_5
+First79 Last79,attendee79@example.com,+14802681401,Sponsor,Acme Inc.,Sales Manager,2025-05-08,"marketing,design,startup",Notes for First79 Last79: Speaker attendee from Acme Inc.,evt_5
+First84 Last84,attendee84@example.com,+11708370199,Sponsor,GlobalSoft,CEO,2025-04-17,tech,Notes for First84 Last84: Sponsor attendee from TechCorp,evt_4
+FIRST13 LAST13,attendee13@example.com,+16140319084,Sponsor,TechCorp,Product Manager,2025-05-02,"design,enterprise",Notes for First13 Last13: Sponsor attendee from TechCorp,evt_5
+First54  Last54,attendee54@example.com,+14039504008,Speaker,InnovateCo,Designer,2025-05-11,"development,business",Notes for First54 Last54: Speaker attendee from InnovateCo,evt_5
+First43 Last43,attendee43@example.com,+14598237144,Sponsor,InnovateCo,CTO,2025-05-10,enterprise,Notes for First43 Last43: Speaker attendee from InnovateCo,evt_2
+First14 Last14,attendee14@example.com,+14494571323,Speaker,DevWorld,Designer,2025-05-11,enterprise,Notes for First14 Last14: Speaker attendee from MediaWorks,evt_3
+FIRST4 LAST4,attendee4@example.com,+13224360957,Regular,Acme Inc.,Software Engineer,2025-04-18,"enterprise,executive",Notes for First4 Last4: Regular attendee from Acme Inc.,evt_1
+First58  Last58,attendee58@example.com,+13957527012,Regular,FutureTech,Designer,2025-04-14,tech,Notes for First58 Last58: Regular attendee from FutureTech,evt_2
+First58 Last58,attendee58@example.com,+13957527012,VIP,FutureTech,Designer,2025-04-14,tech,Notes for First58 Last58: Regular attendee from FutureTech,evt_3
+First90 Last90,attendee90@example.com,+17783370306,Speaker,GlobalSoft,Designer,2025-04-18,"design,tech,business",,evt_5
+FIRST60 LAST60,attendee60@example.com,+17022650651,Regular,Acme Inc.,CTO,2025-05-13,executive,Notes for First60 Last60: Regular attendee from Acme Inc.,evt_2
+First13  Last13,attendee13@example.com,+16140319084,Sponsor,TechCorp,Product Manager,2025-05-02,"design,enterprise",Notes for First13 Last13: Sponsor attendee from TechCorp,evt_5
+First36 Last36,attendee36@example.com,+14292493945,Speaker,InnovateCo,Product Manager,2025-05-07,international,Notes for First36 Last36: VIP attendee from InnovateCo,evt_2
+First59 Last59,attendee59@example.com,+17466163924,Sponsor,Acme Inc.,Product Manager,2025-05-14,"international,marketing",Notes for First59 Last59: Sponsor attendee from DevWorld,evt_3
+FIRST20 LAST20,attendee20@example.com,+17439761860,Speaker,MediaWorks,CTO,2025-04-23,development,Notes for First20 Last20: Speaker attendee from MediaWorks,evt_1
+First62  Last62,attendee62@example.com,+19733681287,VIP,Acme Inc.,Marketing Director,2025-05-08,executive,,evt_4
+First57 Last57,attendee57@example.com,+14752442863,Sponsor,FutureTech,CTO,2025-04-20,international,Notes for First57 Last57: Sponsor attendee from FutureTech,evt_5
+First30 Last30,attendee30@example.com,+15657684110,VIP,DevWorld,CTO,2025-05-05,"local,design",,evt_3
+First56 Last56,attendee56@example.com,+19659885899,Speaker,Acme Inc.,Sales Manager,2025-05-06,startup,Notes for First56 Last56: Speaker attendee from Acme Inc.,evt_1
+First38 Last38,attendee38@example.com,+13091704817,Staff,InnovateCo,Designer,2025-04-25,tech,Notes for First38 Last38: Staff attendee from InnovateCo,evt_3
+First23 Last23,attendee23@example.com,+18081349124,Regular,InnovateCo,Sales Manager,2025-05-11,development,Notes for First23 Last23: Regular attendee from InnovateCo,evt_2

@@ -1,340 +1,283 @@
 // API route for resource distribution tracking
 import { NextRequest, NextResponse } from 'next/server';
+import { verifyQRCode } from '@/lib/qr/generator';
 import prisma from '@/lib/prisma';
-import { verifyQRCode } from '@/lib/qr/qrGenerator';
-import { authorize } from '@/lib/auth/auth';
+import { authorize } from '@/lib/auth/authorize';
+import { getUserFromRequest } from '@/lib/auth/auth';
 
-const EVENT_SECRET = process.env.EVENT_SECRET || 'your-event-secret-change-in-production';
+// Allowed roles for resource distribution
+const ALLOWED_ROLES = ['admin', 'manager', 'staff'];
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(req: NextRequest) {
   try {
-    // Check authorization
-    const authResult = await authorize(['admin', 'distribution'])(req);
+    // Authorize the request
+    const authResult = await authorize(ALLOWED_ROLES)(req);
     
-    if (!authResult.authorized) {
+    if (!authResult.success || !authResult.authorized) {
       return NextResponse.json(
         { success: false, message: authResult.message || 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    // Use the user from auth result
+    const user = authResult.user;
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: 'User identification failed' },
         { status: 401 }
       );
     }
-    
+
     // Parse request body
     const body = await req.json();
-    const { qrData, resourceType, location, staffId, manualId, eventId } = body;
-    
+    const { qrData, manualId, resourceType, location } = body;
+
+    // Validate resource type
     if (!resourceType || !['lunch', 'kit'].includes(resourceType)) {
       return NextResponse.json(
         { success: false, message: 'Valid resource type (lunch or kit) is required' },
         { status: 400 }
       );
     }
-    
-    if (!location) {
+
+    // Ensure at least one identifier is provided
+    if (!qrData && !manualId) {
       return NextResponse.json(
-        { success: false, message: 'Distribution location is required' },
+        { success: false, message: 'QR data or manual ID is required' },
         { status: 400 }
       );
     }
-    
-    if (!staffId) {
+
+    // Get current active event
+    const currentEvent = await prisma.event.findFirst({
+      where: {
+        status: 'active',
+      },
+      orderBy: {
+        startDate: 'desc',
+      },
+    });
+
+    if (!currentEvent) {
       return NextResponse.json(
-        { success: false, message: 'Staff ID is required' },
+        { success: false, message: 'No active event found. Please configure an event first.' },
         { status: 400 }
       );
     }
-    
-    if (!eventId) {
-      return NextResponse.json(
-        { success: false, message: 'Event ID is required' },
-        { status: 400 }
-      );
-    }
-    
-    // Handle QR code-based verification
+
+    let attendeeId: string | null = null;
+
+    // If QR data is provided, verify it
     if (qrData) {
-      // Verify QR code
-      const verificationResult = verifyQRCode(qrData, EVENT_SECRET);
+      const qrVerification = verifyQRCode(qrData);
       
-      if (!verificationResult.valid) {
+      if (!qrVerification.valid) {
         return NextResponse.json(
           { 
             success: false, 
-            message: `Invalid QR code: ${verificationResult.reason || 'Unknown error'}` 
+            message: `Invalid QR code: ${qrVerification.reason || 'unknown error'}` 
           },
           { status: 400 }
         );
       }
       
-      const attendeeId = verificationResult.attendeeId;
+      attendeeId = qrVerification.attendeeId!;
+    } else if (manualId) {
+      // For manual ID, do a direct lookup - try uniqueId or email
+      console.log(`Attempting to find attendee with ID/email: ${manualId}`);
       
-      // Process the resource distribution
-      return await processResourceDistribution(
-        attendeeId,
-        resourceType,
-        location,
-        staffId,
-        eventId
-      );
-    }
-    
-    // Handle manual ID-based verification
-    if (manualId) {
-      // Find attendee by email or unique ID
       const attendee = await prisma.attendee.findFirst({
         where: {
           OR: [
-            { email: manualId },
-            { uniqueId: manualId }
+            { uniqueId: manualId },
+            { email: manualId.toLowerCase() }
           ]
         }
       });
       
       if (!attendee) {
+        console.log(`No attendee found with ID/email: ${manualId}`);
         return NextResponse.json(
-          { success: false, message: 'Attendee not found' },
+          { success: false, message: 'Attendee not found with provided ID or email' },
           { status: 404 }
         );
       }
       
-      // Process the resource distribution
-      return await processResourceDistribution(
-        attendee.uniqueId,
-        resourceType,
-        location,
-        staffId,
-        eventId
+      console.log(`Found attendee with ID: ${attendee.id}, Name: ${attendee.name}`);
+      attendeeId = attendee.id;
+    }
+
+    // Find the attendee
+    const attendee = await prisma.attendee.findUnique({
+      where: { id: attendeeId! }
+    });
+
+    if (!attendee) {
+      return NextResponse.json(
+        { success: false, message: 'Attendee not found' },
+        { status: 404 }
       );
     }
+
+    // Check if attendee is checked in
+    if (!attendee.isCheckedIn) {
+      return NextResponse.json({
+        success: false,
+        message: 'Attendee must be checked in before receiving resources',
+        code: 'NOT_CHECKED_IN'
+      }, { status: 400 });
+    }
+
+    // Check if resource was already claimed
+    const alreadyClaimed = resourceType === 'lunch' 
+      ? attendee.lunchClaimed 
+      : attendee.kitClaimed;
+
+    if (alreadyClaimed) {
+      return NextResponse.json({
+        success: false,
+        message: `${resourceType === 'lunch' ? 'Lunch' : 'Kit'} already claimed by this attendee`,
+        attendee: {
+          id: attendee.id,
+          name: attendee.name,
+          email: attendee.email,
+        },
+        distributionStatus: 'duplicate'
+      });
+    }
+
+    // Update inventory count for this resource type
+    const resource = await prisma.resource.findFirst({
+      where: {
+        type: resourceType,
+        eventId: currentEvent.id
+      }
+    });
+
+    if (resource) {
+      // Check if we have enough resources left
+      if (resource.claimedQuantity >= resource.totalQuantity) {
+        return NextResponse.json({
+          success: false,
+          message: `${resourceType === 'lunch' ? 'Lunch' : 'Kit'} resources depleted`,
+          distributionStatus: 'depleted'
+        }, { status: 400 });
+      }
+
+      // Increment claimed quantity
+      await prisma.resource.update({
+        where: { id: resource.id },
+        data: {
+          claimedQuantity: {
+            increment: 1
+          }
+        }
+      });
+
+      // Check if we're running low and should alert
+      const remainingAfterClaim = resource.totalQuantity - (resource.claimedQuantity + 1);
+      if (remainingAfterClaim <= resource.lowThreshold) {
+        // In a real system, we'd send alerts here
+        console.warn(`${resourceType} resources running low: ${remainingAfterClaim} remaining`);
+      }
+    }
+
+    // Update attendee record based on resource type
+    const updateData: any = {};
+    if (resourceType === 'lunch') {
+      updateData.lunchClaimed = true;
+      updateData.lunchClaimedAt = new Date();
+      updateData.lunchClaimedById = user.id;
+      updateData.lunchClaimedLocation = location || 'Main distribution';
+    } else {
+      updateData.kitClaimed = true;
+      updateData.kitClaimedAt = new Date();
+      updateData.kitClaimedById = user.id;
+      updateData.kitClaimedLocation = location || 'Main distribution';
+    }
+
+    // Apply the update
+    const updatedAttendee = await prisma.attendee.update({
+      where: { id: attendee.id },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        lunchClaimed: true,
+        lunchClaimedAt: true,
+        kitClaimed: true,
+        kitClaimedAt: true,
+        lunchClaimedLocation: true,
+        kitClaimedLocation: true,
+        isCheckedIn: true,
+        checkedInAt: true
+      }
+    });
     
-    return NextResponse.json(
-      { success: false, message: 'Either QR data or manual ID is required' },
-      { status: 400 }
-    );
+    // Log the activity
+    await prisma.activityLog.create({
+      data: {
+        type: 'distribution',
+        action: 'claimed',
+        description: `${attendee.name} claimed ${resourceType}`,
+        entityType: 'Attendee',
+        entityId: attendee.id,
+        staffId: user.id,
+        metadata: { 
+          resourceType,
+          location: location || 'Main distribution',
+          eventId: currentEvent.id
+        }
+      }
+    });
+
+    // For multi-day events, update daily record
+    const eventDay = req.headers.get('x-event-day');
     
+    if (eventDay) {
+      const date = new Date(eventDay);
+      
+      // Find or create daily record
+      await prisma.dailyRecord.upsert({
+        where: {
+          attendeeId_date: {
+            attendeeId: attendee.id,
+            date,
+          }
+        },
+        update: resourceType === 'lunch' 
+          ? { lunchClaimed: true, lunchClaimedAt: new Date() }
+          : { kitClaimed: true, kitClaimedAt: new Date() },
+        create: {
+          attendeeId: attendee.id,
+          date,
+          ...(resourceType === 'lunch' 
+            ? { lunchClaimed: true, lunchClaimedAt: new Date() }
+            : { kitClaimed: true, kitClaimedAt: new Date() })
+        }
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `${resourceType === 'lunch' ? 'Lunch' : 'Kit'} distributed successfully`,
+      attendee: {
+        id: updatedAttendee.id,
+        name: updatedAttendee.name,
+        email: updatedAttendee.email,
+        claimedAt: resourceType === 'lunch' ? updatedAttendee.lunchClaimedAt : updatedAttendee.kitClaimedAt,
+        location: resourceType === 'lunch' ? updatedAttendee.lunchClaimedLocation : updatedAttendee.kitClaimedLocation
+      },
+      distributionStatus: 'success',
+      resourceType
+    });
   } catch (error) {
     console.error('Resource distribution error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        message: (error as Error).message || 'An error occurred during resource distribution' 
-      },
+      { success: false, message: `Server error: ${(error as Error).message}` },
       { status: 500 }
     );
   }
-}
-
-/**
- * Process resource distribution for an attendee
- */
-async function processResourceDistribution(
-  attendeeId: string,
-  resourceType: string,
-  location: string,
-  staffId: string,
-  eventId: string
-): Promise<NextResponse> {
-  // Find attendee by unique ID
-  const attendee = await prisma.attendee.findUnique({ 
-    where: { uniqueId: attendeeId } 
-  });
-  
-  if (!attendee) {
-    return NextResponse.json(
-      { success: false, message: 'Attendee not found' },
-      { status: 404 }
-    );
-  }
-  
-  // Check if attendee is checked in
-  if (!attendee.isCheckedIn) {
-    return NextResponse.json(
-      { success: false, message: 'Attendee must be checked in before claiming resources' },
-      { status: 400 }
-    );
-  }
-  
-  // Check if resource is already claimed
-  let isAlreadyClaimed = false;
-  let claimedAt: Date | null = null;
-  let claimedLocation: string | null = null;
-  
-  if (resourceType === 'lunch') {
-    isAlreadyClaimed = attendee.lunchClaimed;
-    claimedAt = attendee.lunchClaimedAt;
-    claimedLocation = attendee.lunchClaimedLocation;
-  } else if (resourceType === 'kit') {
-    isAlreadyClaimed = attendee.kitClaimed;
-    claimedAt = attendee.kitClaimedAt;
-    claimedLocation = attendee.kitClaimedLocation;
-  }
-  
-  if (isAlreadyClaimed) {
-    return NextResponse.json(
-      {
-        success: false,
-        message: `${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} already claimed`,
-        attendee: {
-          name: attendee.name,
-          email: attendee.email,
-          claimedAt: claimedAt,
-          claimedLocation: claimedLocation
-        }
-      },
-      { status: 409 }
-    );
-  }
-  
-  // Create today's date for daily records
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  // Use transaction to ensure all updates succeed or fail together
-  const result = await prisma.$transaction(async (tx) => {
-    // Update attendee resource claim status
-    let updateData: any = {};
-    
-    if (resourceType === 'lunch') {
-      updateData = {
-        lunchClaimed: true,
-        lunchClaimedAt: new Date(),
-        lunchClaimedById: staffId,
-        lunchClaimedLocation: location
-      };
-    } else if (resourceType === 'kit') {
-      updateData = {
-        kitClaimed: true,
-        kitClaimedAt: new Date(),
-        kitClaimedById: staffId,
-        kitClaimedLocation: location
-      };
-    }
-    
-    // Update the attendee
-    const updatedAttendee = await tx.attendee.update({
-      where: { id: attendee.id },
-      data: updateData
-    });
-    
-    // Check if there's already a daily record for today
-    const existingDailyRecord = await tx.dailyRecord.findFirst({
-      where: {
-        attendeeId: attendee.id,
-        date: {
-          gte: today,
-          lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) // next day
-        }
-      }
-    });
-    
-    // Create or update daily record
-    if (existingDailyRecord) {
-      // Create update data for the record
-      const recordUpdateData: any = {};
-      
-      if (resourceType === 'lunch') {
-        recordUpdateData.lunchClaimed = true;
-        recordUpdateData.lunchClaimedAt = new Date();
-      } else if (resourceType === 'kit') {
-        recordUpdateData.kitClaimed = true;
-        recordUpdateData.kitClaimedAt = new Date();
-      }
-      
-      await tx.dailyRecord.update({
-        where: { id: existingDailyRecord.id },
-        data: recordUpdateData
-      });
-    } else {
-      // Create new daily record
-      const newRecordData: any = {
-        date: today,
-        checkedIn: false,
-        attendeeId: attendee.id
-      };
-      
-      if (resourceType === 'lunch') {
-        newRecordData.lunchClaimed = true;
-        newRecordData.lunchClaimedAt = new Date();
-        newRecordData.kitClaimed = false;
-      } else if (resourceType === 'kit') {
-        newRecordData.kitClaimed = true;
-        newRecordData.kitClaimedAt = new Date();
-        newRecordData.lunchClaimed = false;
-      }
-      
-      await tx.dailyRecord.create({
-        data: newRecordData
-      });
-    }
-    
-    // Find the resource in the event
-    const resource = await tx.resource.findFirst({
-      where: {
-        eventId: eventId,
-        type: resourceType
-      }
-    });
-    
-    if (resource) {
-      // Update resource claimed quantity
-      const updatedResource = await tx.resource.update({
-        where: { id: resource.id },
-        data: {
-          claimedQuantity: resource.claimedQuantity + 1
-        }
-      });
-      
-      // Check if inventory is running low
-      const lowInventory = updatedResource.claimedQuantity >= 
-        (updatedResource.totalQuantity - updatedResource.lowThreshold);
-      
-      return {
-        attendee: updatedAttendee,
-        resource: updatedResource,
-        lowInventory: lowInventory
-      };
-    }
-    
-    return {
-      attendee: updatedAttendee,
-      resource: null,
-      lowInventory: false
-    };
-  });
-  
-  // Prepare response data
-  const claimedAt = resourceType === 'lunch' 
-    ? result.attendee.lunchClaimedAt 
-    : result.attendee.kitClaimedAt;
-    
-  const claimedLocation = resourceType === 'lunch'
-    ? result.attendee.lunchClaimedLocation
-    : result.attendee.kitClaimedLocation;
-  
-  // Return response with low inventory warning if applicable
-  if (result.resource && result.lowInventory) {
-    const remaining = result.resource.totalQuantity - result.resource.claimedQuantity;
-    
-    return NextResponse.json({
-      success: true,
-      message: `${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} claimed successfully`,
-      warning: `Low ${resourceType} inventory: ${remaining} remaining`,
-      attendee: {
-        name: result.attendee.name,
-        email: result.attendee.email,
-        claimedAt: claimedAt,
-        location: claimedLocation
-      }
-    });
-  }
-  
-  return NextResponse.json({
-    success: true,
-    message: `${resourceType.charAt(0).toUpperCase() + resourceType.slice(1)} claimed successfully`,
-    attendee: {
-      name: result.attendee.name,
-      email: result.attendee.email,
-      claimedAt: claimedAt,
-      location: claimedLocation
-    }
-  });
 } 

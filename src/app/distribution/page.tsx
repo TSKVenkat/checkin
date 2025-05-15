@@ -1,404 +1,410 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, ChangeEvent } from 'react';
 import QRScanner from '@/components/QRScanner';
-import DashboardLayout from '@/components/DashboardLayout';
-import DateSelector from '@/components/DateSelector';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
+import { useAuthSession, tokenStorage } from '@/lib/query/auth-hooks';
+import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
+import Badge from '@/components/ui/Badge';
+import { Spinner } from '@/components/ui/Loading';
 
 interface AttendeeInfo {
   name: string;
   email: string;
-  role: string;
-  resourceClaims: {
-    [key: string]: {
-      claimed: boolean;
-      claimedAt?: string;
-      claimedBy?: string;
-      claimedLocation?: string;
-    }
-  };
-  registrationStatus: {
-    isCheckedIn: boolean;
-    checkedInAt?: string;
-  };
+  claimedAt: string;
+  location: string;
+  claimedLocation?: string;
+}
+
+interface ResourceResponse {
+  success: boolean;
+  message: string;
+  warning?: string;
+  attendee?: AttendeeInfo;
 }
 
 export default function DistributionPage() {
-  const [user, setUser] = useState<any | null>(null);
-  const [isScanning, setIsScanning] = useState(true);
-  const [distributionLocation, setDistributionLocation] = useState('Main Hall');
-  const [resourceType, setResourceType] = useState('lunch');
-  const [manualId, setManualId] = useState('');
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [attendeeInfo, setAttendeeInfo] = useState<AttendeeInfo | null>(null);
-  const [isAlreadyClaimed, setIsAlreadyClaimed] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-
-  // Multi-day event data (coming from API in real app)
-  const eventStartDate = new Date();
-  const eventEndDate = new Date();
-  eventEndDate.setDate(eventEndDate.getDate() + 2); // 3-day event
-
-  // Location options
-  const locationOptions = [
-    'Main Hall',
-    'Cafeteria',
-    'Registration Desk',
-    'Workshop Area'
-  ];
-
-  // Resource type options
-  const resourceOptions = [
-    { value: 'lunch', label: 'Lunch' },
-    { value: 'kit', label: 'Welcome Kit' },
-    { value: 'swag', label: 'Swag Bag' },
-    { value: 'certificate', label: 'Certificate' }
-  ];
-
-  // Get user info from localStorage
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse user from localStorage');
-      }
+  const [result, setResult] = useState<ResourceResponse | null>(null);
+  const [manualId, setManualId] = useState<string>('');
+  const [locationOptions, setLocationOptions] = useState<string[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+  const [resourceType, setResourceType] = useState<'lunch' | 'kit'>('lunch');
+  const [staffId, setStaffId] = useState<string>('');
+  const [eventId, setEventId] = useState<string>('');
+  
+  // Check authentication
+  const { data: sessionData } = useAuthSession({
+    onUnauthenticated: () => {
+      router.push('/login');
     }
-  }, []);
-
-  // Handle QR code scan
-  const handleScan = async (data: string) => {
-    try {
-      setError(null);
-      setSuccessMessage(null);
-      setAttendeeInfo(null);
-      setIsAlreadyClaimed(false);
-      setLoading(true);
-      
-      if (!user) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
+  });
+  
+  // Fetch staff/user information and locations from API
+  useEffect(() => {
+    if (sessionData?.isAuthenticated) {
+      // Get user from token storage
+      const user = tokenStorage.getUser();
+      if (user?.id) {
+        setStaffId(user.id);
       }
       
-      // Reset scanning state to prevent multiple scans
-      setIsScanning(false);
+      // Fetch event information and location options
+      const fetchEventInfo = async () => {
+        try {
+          const { data } = await axios.get('/api/events/current');
+          if (data.success && data.event) {
+            setEventId(data.event.id);
+            
+            // Get location options from event data
+            if (data.event.locations && data.event.locations.length > 0) {
+              const locations = data.event.locations.map((loc: any) => loc.name);
+              setLocationOptions(locations);
+              setSelectedLocation(locations[0] || '');
+            } else {
+              // Fallback locations if none provided by API
+              const defaultLocations = ['Main Entrance', 'Resource Center', 'Registration Desk'];
+              setLocationOptions(defaultLocations);
+              setSelectedLocation(defaultLocations[0]);
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching event information:', err);
+          // Fallback locations if API fails
+          const defaultLocations = ['Main Entrance', 'Resource Center', 'Registration Desk'];
+          setLocationOptions(defaultLocations);
+          setSelectedLocation(defaultLocations[0]);
+        }
+      };
       
-      // Process resource claim
-      await processResourceClaim(data);
+      fetchEventInfo();
+    }
+  }, [sessionData, router]);
+  
+  // Handle QR code scan
+  const handleScan = async (qrData: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      setResult(null);
       
-    } catch (err: any) {
-      console.error('Scan error:', err);
-      setError(err.message || 'Failed to process QR code');
+      // Call API to record resource distribution
+      const response = await axios.post<ResourceResponse>('/api/attendees/resource', {
+        qrData,
+        resourceType,
+        location: selectedLocation
+      });
+      
+      setResult(response.data);
+      
+      // Play success sound
+      const audio = new Audio('/sounds/success.mp3');
+      audio.play().catch(e => {
+        // Silent fail if sound doesn't play
+        console.log('Sound playback error (non-critical):', e);
+      });
+      
+    } catch (err) {
+      console.error('Distribution error:', err);
+      
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || 'Failed to record resource distribution');
+        setResult(err.response.data);
+      } else {
+        setError((err as Error).message || 'An unexpected error occurred');
+      }
+      
+      // Play error sound
+      const audio = new Audio('/sounds/error.mp3');
+      audio.play().catch(e => {
+        // Silent fail if sound doesn't play
+        console.log('Sound playback error (non-critical):', e);
+      });
+      
     } finally {
       setLoading(false);
     }
   };
-
-  // Handle manual ID resource claim
-  const handleManualResourceClaim = async (e: React.FormEvent) => {
-    e.preventDefault();
+  
+  // Handle manual distribution
+  const handleManualDistribution = async () => {
+    if (!manualId) {
+      setError('Please enter an email or ID');
+      return;
+    }
     
     try {
-      setError(null);
-      setSuccessMessage(null);
-      setAttendeeInfo(null);
-      setIsAlreadyClaimed(false);
+      console.log('Attempting manual lookup with value:', manualId);
       setLoading(true);
+      setError(null);
+      setResult(null);
       
-      if (!user) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
+      // Call API to record resource distribution
+      const response = await axios.post<ResourceResponse>('/api/attendees/resource', {
+        manualId,
+        resourceType,
+        location: selectedLocation
+      });
       
-      if (!manualId.trim()) {
-        setError('Please enter an ID or email');
-        setLoading(false);
-        return;
-      }
-      
-      // Process resource claim
-      await processResourceClaim(null, manualId.trim());
-      
-      // Clear the input field
+      setResult(response.data);
       setManualId('');
       
-    } catch (err: any) {
-      console.error('Manual resource claim error:', err);
-      setError(err.message || 'Failed to process resource claim');
+      // Play success sound
+      const audio = new Audio('/sounds/success.mp3');
+      audio.play().catch(e => {
+        // Silent fail if sound doesn't play
+        console.log('Sound playback error (non-critical):', e);
+      });
+      
+    } catch (err) {
+      console.error('Manual distribution error:', err);
+      
+      if (axios.isAxiosError(err) && err.response) {
+        setError(err.response.data.message || 'Failed to record resource distribution');
+        setResult(err.response.data);
+      } else {
+        setError((err as Error).message || 'An unexpected error occurred');
+      }
+      
+      // Play error sound
+      const audio = new Audio('/sounds/error.mp3');
+      audio.play().catch(e => {
+        // Silent fail if sound doesn't play
+        console.log('Sound playback error (non-critical):', e);
+      });
+      
     } finally {
       setLoading(false);
     }
   };
-
-  // Common function to process resource claim
-  const processResourceClaim = async (qrData: string | null, manualIdValue: string = '') => {
-    try {
-      // Get token from localStorage
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-      
-      // Format date for API
-      const formattedDate = selectedDate.toISOString().split('T')[0];
-      
-      const response = await axios.post(
-        '/api/attendees/resource',
-        {
-          qrData,
-          manualId: manualIdValue,
-          resourceType,
-          location: distributionLocation,
-          staffId: user.id,
-          date: formattedDate
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-      
-      if (response.data.success) {
-        setSuccessMessage(`${response.data.attendee.name} received ${resourceType} successfully!`);
-        setAttendeeInfo(response.data.attendee);
-      } else {
-        throw new Error(response.data.message || 'Resource claim failed');
-      }
-      
-    } catch (err: any) {
-      // Handle case where resource is already claimed
-      if (err.response?.status === 409) {
-        setIsAlreadyClaimed(true);
-        setAttendeeInfo(err.response.data.attendee);
-        throw new Error(`Already claimed ${resourceType} at ${
-          err.response.data.attendee.resourceClaims[resourceType]?.claimedAt 
-            ? new Date(err.response.data.attendee.resourceClaims[resourceType].claimedAt).toLocaleString() 
-            : 'unknown time'
-        }`);
-      }
-      
-      // Handle not checked in error
-      if (err.response?.status === 400 && err.response.data.code === 'NOT_CHECKED_IN') {
-        setAttendeeInfo(err.response.data.attendee);
-        throw new Error('Attendee has not checked in. Resources can only be claimed after check-in.');
-      }
-      
-      // Handle other errors
-      throw new Error(err.response?.data?.message || err.message || 'Resource claim failed');
-    }
-  };
-
-  // Handle date selection for multi-day events
-  const handleDateChange = (date: Date) => {
-    setSelectedDate(date);
-  };
-
-  // Reset and start a new scan
-  const handleReset = () => {
-    setError(null);
-    setSuccessMessage(null);
-    setAttendeeInfo(null);
-    setIsAlreadyClaimed(false);
-    setManualId('');
-    setIsScanning(true);
-  };
-
+  
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Resource Distribution</h1>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">QR Code Scanner</h2>
-                
-                <div className="mb-4">
-                  <QRScanner 
-                    onScan={handleScan} 
-                    onError={(err) => setError(err.message)}
-                    cameraFacingMode="environment"
-                    scanning={isScanning}
-                  />
-                </div>
-                
-                <div className="mt-4 border-t pt-4">
-                  <h3 className="text-md font-medium text-gray-700 mb-2">Or Enter ID Manually</h3>
-                  <form onSubmit={handleManualResourceClaim} className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={manualId}
-                      onChange={(e) => setManualId(e.target.value)}
-                      placeholder="Enter email or ID"
-                      className="flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={loading}
-                    />
-                    <button
-                      type="submit"
-                      disabled={loading || !manualId.trim()}
-                      className={`px-4 py-2 rounded-md ${
-                        loading || !manualId.trim()
-                          ? 'bg-gray-300 cursor-not-allowed'
-                          : 'bg-blue-600 hover:bg-blue-700 text-white'
-                      }`}
-                    >
-                      Confirm
-                    </button>
-                  </form>
-                </div>
-              </div>
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-2/3 space-y-6">
+          <Card title="Resource Distribution" variant="default">
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <Button
+                onClick={() => setResourceType('lunch')}
+                variant={resourceType === 'lunch' ? 'default' : 'outline'}
+                className="py-3 text-base"
+                leftIcon={
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8h1a4 4 0 010 8h-1"></path>
+                    <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"></path>
+                    <line x1="6" y1="1" x2="6" y2="4"></line>
+                    <line x1="10" y1="1" x2="10" y2="4"></line>
+                    <line x1="14" y1="1" x2="14" y2="4"></line>
+                  </svg>
+                }
+              >
+                Lunch
+              </Button>
+              <Button
+                onClick={() => setResourceType('kit')}
+                variant={resourceType === 'kit' ? 'default' : 'outline'}
+                className="py-3 text-base"
+                leftIcon={
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                  </svg>
+                }
+              >
+                Welcome Kit
+              </Button>
             </div>
-          </div>
-          
-          <div className="col-span-1">
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Distribution Settings</h2>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Resource Type
-                  </label>
-                  <select
-                    value={resourceType}
-                    onChange={(e) => setResourceType(e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {resourceOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
-                  </label>
-                  <select
-                    value={distributionLocation}
-                    onChange={(e) => setDistributionLocation(e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    {locationOptions.map((location) => (
-                      <option key={location} value={location}>
-                        {location}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                {/* Date selector for multi-day events */}
-                <DateSelector
-                  startDate={eventStartDate}
-                  endDate={eventEndDate}
-                  selectedDate={selectedDate}
-                  onDateSelect={handleDateChange}
+            
+            <div className="mb-6">
+              <Select
+                label="Distribution Location"
+                id="location"
+                value={selectedLocation}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedLocation(e.target.value)}
+              >
+                {locationOptions.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-4 text-white">Scan Attendee QR Code</h3>
+              <QRScanner onScanAction={handleScan} onError={(err) => setError(err.message)} />
+            </div>
+            
+            <div className="p-4 bg-dark-bg-tertiary rounded-xl border border-dark-border mb-4">
+              <h3 className="text-lg font-semibold mb-3 text-white">Manual Entry</h3>
+              <div className="flex gap-3">
+                <Input
+                  placeholder="Enter email or ID"
+                  value={manualId}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setManualId(e.target.value)}
+                  className="flex-1"
                 />
+                <Button
+                  onClick={handleManualDistribution}
+                  disabled={loading}
+                  leftIcon={loading ? <Spinner size="xs" variant="white" /> : undefined}
+                >
+                  {loading ? 'Processing...' : 'Submit'}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+        
+        <div className="w-full md:w-1/3 space-y-6">
+          <Card title="Current Status" variant="elevated">
+            {error && (
+              <div className="mb-4 p-4 rounded-lg bg-error/10 border-l-4 border-error">
+                <p className="font-bold text-red-300">Error</p>
+                <p className="text-red-200">{error}</p>
+              </div>
+            )}
+            
+            {/* Success Message */}
+            {result && result.success && (
+              <div className="mb-4 p-4 rounded-lg bg-success/10 border-l-4 border-success flex flex-col">
+                <div className="flex items-center">
+                  <div className="bg-success/20 rounded-full p-2 mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-bold text-green-300">Success!</p>
+                    <p className="text-green-200">{result.message}</p>
+                  </div>
+                </div>
                 
-                <div className="flex flex-col space-y-4 mt-4">
-                  <button
-                    onClick={handleReset}
-                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm"
-                  >
-                    New Resource Claim
-                  </button>
+                {result.attendee && (
+                  <div className="mt-4 pt-4 border-t border-success/20">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="text-gray-400">Name:</div>
+                      <div className="text-white font-medium">{result.attendee.name}</div>
+                      
+                      <div className="text-gray-400">Email:</div>
+                      <div className="text-white font-medium">{result.attendee.email}</div>
+                      
+                      <div className="text-gray-400">Time:</div>
+                      <div className="text-white font-medium">{new Date(result.attendee.claimedAt).toLocaleTimeString()}</div>
+                      
+                      <div className="text-gray-400">Location:</div>
+                      <div className="text-white font-medium">{result.attendee.location}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Warning Message (Low Inventory) */}
+            {result && result.success && result.warning && (
+              <div className="mb-4 p-4 rounded-lg bg-warning/10 border-l-4 border-warning flex items-center">
+                <div className="bg-warning/20 rounded-full p-2 mr-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="font-bold text-orange-300">Warning</p>
+                  <p className="text-orange-200">{result.warning}</p>
+                </div>
+              </div>
+            )}
+            
+            {/* Error with Attendee Info (already claimed) */}
+            {result && !result.success && result.attendee && (
+              <div className="mb-4 p-4 rounded-lg bg-warning/10 border-l-4 border-warning">
+                <div className="flex items-center mb-3">
+                  <div className="bg-warning/20 rounded-full p-2 mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-orange-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-bold text-orange-300">Notice</p>
+                    <p className="text-orange-200">{result.message}</p>
+                  </div>
+                </div>
+                
+                {result.attendee && (
+                  <div className="pt-3 border-t border-warning/20">
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="text-gray-400">Name:</div>
+                      <div className="text-white font-medium">{result.attendee.name}</div>
+                      
+                      <div className="text-gray-400">Email:</div>
+                      <div className="text-white font-medium">{result.attendee.email}</div>
+                      
+                      <div className="text-gray-400">Previous Claim:</div>
+                      <div className="text-white font-medium">{new Date(result.attendee.claimedAt).toLocaleString()}</div>
+                      
+                      <div className="text-gray-400">Previous Location:</div>
+                      <div className="text-white font-medium">{result.attendee.claimedLocation}</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Default state when no result */}
+            {!error && !result && (
+              <div className="flex flex-col items-center justify-center py-10 text-center">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-white mb-2">Ready to Distribute</h3>
+                <p className="text-gray-400 mb-4">Scan a QR code or enter an attendee email</p>
+                
+                <div className="grid grid-cols-2 gap-4 w-full max-w-sm">
+                  <div className="text-center">
+                    <Badge variant="primary" size="lg" className="w-full justify-center">
+                      {resourceType === 'lunch' ? 'Lunch' : 'Welcome Kit'}
+                    </Badge>
+                  </div>
+                  <div className="text-center">
+                    <Badge variant="secondary" size="lg" className="w-full justify-center">
+                      {selectedLocation}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
+          </Card>
+          
+          <Card title="Inventory Status" variant="elevated">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-dark-bg-tertiary p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-400 mb-1">Lunch Packages</h4>
+                <div className="flex items-end">
+                  <span className="text-2xl font-bold text-white mr-2">--</span>
+                  <span className="text-xs text-gray-500">remaining</span>
+                </div>
+              </div>
+              <div className="bg-dark-bg-tertiary p-4 rounded-lg">
+                <h4 className="text-sm font-medium text-gray-400 mb-1">Welcome Kits</h4>
+                <div className="flex items-end">
+                  <span className="text-2xl font-bold text-white mr-2">--</span>
+                  <span className="text-xs text-gray-500">remaining</span>
                 </div>
               </div>
             </div>
-          </div>
+            <p className="text-sm text-gray-400 mt-4 text-center italic">Real-time inventory tracking coming soon</p>
+          </Card>
         </div>
-
-        {/* Results area */}
-        {(error || successMessage || attendeeInfo) && (
-          <div className={`bg-white shadow-sm rounded-lg overflow-hidden border-l-4 ${
-            successMessage ? 'border-green-500' : error ? 'border-red-500' : 'border-gray-300'
-          }`}>
-            <div className="p-6">
-              {error && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">Error</h3>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </div>
-                </div>
-              )}
-              
-              {successMessage && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-green-800">Success</h3>
-                    <p className="text-sm text-green-700 mt-1">{successMessage}</p>
-                  </div>
-                </div>
-              )}
-              
-              {attendeeInfo && (
-                <div className="mt-4 pt-4 border-t">
-                  <h3 className="text-md font-medium text-gray-900 mb-2">Attendee Information</h3>
-                  <div className="bg-gray-50 rounded-md p-4">
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">Name</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{attendeeInfo.name}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Email</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{attendeeInfo.email}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Role</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{attendeeInfo.role || 'N/A'}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Check-in Status</dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {attendeeInfo.registrationStatus.isCheckedIn ? 
-                            `Checked in at ${new Date(attendeeInfo.registrationStatus.checkedInAt || '').toLocaleString()}` : 
-                            'Not checked in'
-                          }
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">
-                          {isAlreadyClaimed ? 'Previously Claimed' : 'Resource Status'}
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {attendeeInfo.resourceClaims[resourceType]?.claimed ? 
-                            `Claimed at ${new Date(attendeeInfo.resourceClaims[resourceType].claimedAt || '').toLocaleString()}` : 
-                            'Not claimed'
-                          }
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
-    </DashboardLayout>
+    </div>
   );
 } 

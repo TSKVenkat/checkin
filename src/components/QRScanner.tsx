@@ -1,258 +1,422 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { BrowserQRCodeReader, BrowserMultiFormatReader, IScannerControls } from '@zxing/browser';
-import { BarcodeFormat, DecodeHintType, Exception } from '@zxing/library';
+import React, { useState, useEffect, useRef } from 'react';
+import { BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
+import { Result } from '@zxing/library';
+import { cn } from '@/lib/utils';
+import Button from '@/components/ui/Button';
+import { Spinner } from '@/components/ui/Loading';
 
 interface QRScannerProps {
-  onScan: (data: string) => void;
+  onScanAction: (data: string) => void;
   onError?: (error: Error) => void;
+  reactivateDelay?: number;
+  className?: string;
   cameraFacingMode?: 'environment' | 'user';
-  scanning?: boolean;
 }
 
-export default function QRScanner({ 
-  onScan, 
-  onError, 
-  cameraFacingMode = 'environment',
-  scanning = true
+export default function QRScanner({
+  onScanAction,
+  onError,
+  reactivateDelay = 1500,
+  className = '',
+  cameraFacingMode = 'environment', // Rear camera by default
 }: QRScannerProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [isScanning, setIsScanning] = useState<boolean>(scanning);
-  const [error, setError] = useState<string | null>(null);
-  const [availableCameras, setAvailableCameras] = useState<MediaDeviceInfo[]>([]);
+  const [isActive, setIsActive] = useState<boolean>(true);
+  const [cameraList, setCameraList] = useState<MediaDeviceInfo[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string | null>(null);
-  const readerRef = useRef<BrowserMultiFormatReader | null>(null);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [permissionState, setPermissionState] = useState<PermissionState | null>(null);
+  const [scanAttempts, setScanAttempts] = useState<number>(0);
+  
+  const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<IScannerControls | null>(null);
 
-  // Initialize scanner with proper hints for better performance
+  // Explicitly request camera permissions first
   useEffect(() => {
-    const hints = new Map();
-    // Set specific format to scan (QR codes)
-    hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]);
-    // Increase scanning try-hard threshold for difficult codes
-    hints.set(DecodeHintType.TRY_HARDER, true);
+    let isMounted = true;
     
-    // Create reader with hints
-    const codeReader = new BrowserMultiFormatReader(hints);
-    readerRef.current = codeReader;
-
-    // Get available cameras
-    const getCameras = async () => {
+    const requestCameraPermission = async () => {
       try {
-        const devices = await codeReader.listVideoInputDevices();
-        setAvailableCameras(devices);
-        
-        // Prefer back camera for mobile devices
-        const backCamera = devices.find(device => 
-          device.label.toLowerCase().includes('back') || 
-          device.label.toLowerCase().includes('rear')
-        );
-        
-        if (backCamera) {
-          setSelectedCamera(backCamera.deviceId);
-        } else if (devices.length > 0) {
-          setSelectedCamera(devices[0].deviceId);
+        // First check if permissions API is available
+        if (navigator.permissions && navigator.permissions.query) {
+          const permissionStatus = await navigator.permissions.query({ name: 'camera' as PermissionName });
+          
+          if (isMounted) {
+            setPermissionState(permissionStatus.state);
+            
+            // Listen for permission changes
+            permissionStatus.onchange = () => {
+              if (isMounted) {
+                setPermissionState(permissionStatus.state);
+                
+                // If permission is granted after a change, initialize the scanner
+                if (permissionStatus.state === 'granted') {
+                  initializeCamera();
+                } else if (permissionStatus.state === 'denied') {
+                  setError('Camera permission was denied. Please allow camera access to scan QR codes.');
+                  setIsInitializing(false);
+                }
+              }
+            };
+            
+            // If already granted, proceed with initialization
+            if (permissionStatus.state === 'granted') {
+              initializeCamera();
+            } else if (permissionStatus.state === 'prompt') {
+              // We'll need to explicitly request access to trigger the permission prompt
+              requestExplicitCameraAccess();
+            } else if (permissionStatus.state === 'denied') {
+              setError('Camera permission is denied. Please allow camera access in your browser settings.');
+              setIsInitializing(false);
+            }
+          }
+        } else {
+          // Fallback for browsers without Permissions API - directly request access
+          requestExplicitCameraAccess();
         }
       } catch (err) {
-        console.error('Failed to list cameras:', err);
+        if (isMounted) {
+          console.error('Error checking camera permission:', err);
+          // Fallback to direct access request
+          requestExplicitCameraAccess();
+        }
       }
     };
-
-    getCameras();
-
-    // Clean up on unmount
-    return () => {
-      stopScanner();
-      if (readerRef.current) {
-        readerRef.current.reset();
-      }
-    };
-  }, []);
-
-  // Start or stop scanner based on isScanning state and selectedCamera
-  useEffect(() => {
-    if (isScanning && selectedCamera) {
-      startScanner(selectedCamera);
-    } else {
-      stopScanner();
-    }
-  }, [isScanning, selectedCamera]);
-
-  // Effect to reflect external scanning prop
-  useEffect(() => {
-    setIsScanning(scanning);
-  }, [scanning]);
-
-  const startScanner = async (deviceId: string) => {
-    try {
-      stopScanner(); // Stop any existing scanner
-      setError(null);
-      
-      if (!readerRef.current || !videoRef.current) return;
-      
-      // Request permissions with specific camera
+    
+    const requestExplicitCameraAccess = async () => {
       try {
-        await navigator.mediaDevices.getUserMedia({ 
-          video: { deviceId: { exact: deviceId } } 
+        // Directly request camera access to trigger the browser permission dialog
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: cameraFacingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          } 
         });
-        setHasPermission(true);
+        
+        if (isMounted) {
+          // Stop the temporary stream
+          stream.getTracks().forEach(track => track.stop());
+          // Now proceed with initialization
+          initializeCamera();
+        }
       } catch (err) {
-        setHasPermission(false);
-        setError(`Camera permission denied: ${(err as Error).message}`);
-        if (onError) onError(err as Error);
-        return;
+        if (isMounted) {
+          console.error('Camera access error:', err);
+          setError('Failed to access camera: ' + (err as Error).message);
+          setIsInitializing(false);
+          onError?.(err as Error);
+        }
       }
-      
-      // Start continuous scanning with specific camera
-      const controls = await readerRef.current.decodeFromVideoDevice(
-        deviceId,
-        videoRef.current,
-        (result, error) => {
-          if (result) {
-            // Vibrate on success if supported
-            if (navigator.vibrate) {
-              navigator.vibrate(100);
-            }
+    };
+    
+    const initializeCamera = async () => {
+      try {
+        // Get available cameras
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const cameras = devices.filter(device => device.kind === 'videoinput');
+        
+        if (isMounted) {
+          setCameraList(cameras);
+          
+          // Select appropriate camera
+          if (cameras.length > 0) {
+            // Try to find back camera for mobile devices
+            const backCamera = cameras.find(camera => 
+              /back|rear|environment/i.test(camera.label)
+            );
             
-            // Play success sound
-            const successSound = new Audio('/audio/beep.mp3');
-            successSound.play().catch(e => console.log('Cannot play sound', e));
+            const preferredCamera = cameraFacingMode === 'environment' 
+              ? backCamera || cameras[0]
+              : cameras.find(camera => /front|user/i.test(camera.label)) || cameras[0];
             
-            // Provide result to caller
-            onScan(result.getText());
+            setSelectedCamera(preferredCamera.deviceId);
+          } else {
+            setError('No cameras found on your device');
           }
           
-          if (error && !(error instanceof Exception && error.message.includes('No MultiFormat Readers'))) {
-            console.error('QR Scanner error:', error);
-            setError(`Scanning error: ${error.message}`);
-            if (onError) onError(error);
+          setIsInitializing(false);
+        }
+      } catch (err) {
+        if (isMounted) {
+          console.error('Camera initialization error:', err);
+          setError('Failed to initialize camera: ' + (err as Error).message);
+          setIsInitializing(false);
+          onError?.(err as Error);
+        }
+      }
+    };
+    
+    requestCameraPermission();
+    
+    return () => {
+      isMounted = false;
+      // Clean up by stopping any active scanner
+      if (controlsRef.current) {
+        controlsRef.current.stop();
+      }
+    };
+  }, [cameraFacingMode, onError]);
+
+  // Start scanning when camera is selected
+  useEffect(() => {
+    if (!selectedCamera || !isActive || !videoRef.current) return;
+    
+    const codeReader = new BrowserQRCodeReader();
+    let isMounted = true;
+    
+    const startScanning = async () => {
+      try {
+        if (videoRef.current) {
+          try {
+            // Configure hints via the proper API method
+            // This is the correct way to set hints with zxing
+            codeReader.hints.set(2, true); // TRY_HARDER hint for more thorough scanning
+            codeReader.hints.set(3, true); // PURE_BARCODE hint to scan codes even with less contrast
+            
+            const controls = await codeReader.decodeFromVideoDevice(
+              selectedCamera,
+              videoRef.current,
+              (result: Result | undefined, error: Error | undefined) => {
+                if (!isMounted) return;
+                
+                if (result) {
+                  // Handle successful scan
+                  const qrData = result.getText();
+                  console.log("QR code scanned successfully:", qrData);
+                  onScanAction(qrData);
+                  
+                  // Reset scan attempts counter on successful scan
+                  setScanAttempts(0);
+                  
+                  // Deactivate scanner temporarily to prevent duplicate scans
+                  setIsActive(false);
+                  
+                  // Reactivate after delay
+                  setTimeout(() => {
+                    if (isMounted) {
+                      setIsActive(true);
+                    }
+                  }, reactivateDelay);
+                }
+                
+                if (error && error.name !== 'NotFoundException') {
+                  console.error('Scanning error:', error);
+                  // Only call onError for non-standard errors
+                  if (error.name !== 'ChecksumException' && error.name !== 'FormatException') {
+                    onError?.(error);
+                    // Increment scan attempt counter
+                    setScanAttempts(prev => prev + 1);
+                    
+                    // If we've had multiple failures, try resetting the scanner
+                    if (scanAttempts > 5) {
+                      resetScanner();
+                    }
+                  }
+                }
+              }
+            );
+            
+            if (isMounted) {
+              controlsRef.current = controls;
+            } else {
+              controls.stop();
+            }
+          } catch (err) {
+            if (isMounted) {
+              console.error('Scanner error:', err);
+              setError('Scanner error: ' + (err as Error).message);
+              onError?.(err as Error);
+            }
           }
         }
-      );
-      
-      controlsRef.current = controls;
-      
-    } catch (err) {
-      console.error('QR Scanner startup error:', err);
-      setHasPermission(false);
-      setError(`Camera access error: ${(err as Error).message}`);
-      if (onError) onError(err as Error);
-    }
-  };
+      } catch (err) {
+        if (isMounted) {
+          console.error('Scanner error:', err);
+          setError('Scanner error: ' + (err as Error).message);
+          onError?.(err as Error);
+        }
+      }
+    };
+    
+    startScanning();
+    
+    return () => {
+      isMounted = false;
+      if (controlsRef.current) {
+        controlsRef.current.stop();
+      }
+    };
+  }, [selectedCamera, isActive, onScanAction, onError, reactivateDelay, scanAttempts]);
 
-  const stopScanner = () => {
+  // Reset the scanner in case of repeated failures
+  const resetScanner = () => {
     if (controlsRef.current) {
       controlsRef.current.stop();
       controlsRef.current = null;
     }
     
-    if (videoRef.current && videoRef.current.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      stream.getTracks().forEach(track => track.stop());
+    setScanAttempts(0);
+    setError(null);
+    
+    // Force a refresh of the camera selection
+    const currentCamera = selectedCamera;
+    setSelectedCamera(null);
+    
+    // Small delay before reactivating
+    setTimeout(() => {
+      setSelectedCamera(currentCamera);
+    }, 500);
+  };
+
+  // Handle camera selection change
+  const handleCameraChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newCameraId = e.target.value;
+    setSelectedCamera(newCameraId);
+    
+    // Stop current scanner
+    if (controlsRef.current) {
+      controlsRef.current.stop();
+      controlsRef.current = null;
     }
+    
+    // Reset errors and attempts
+    setError(null);
+    setScanAttempts(0);
   };
 
-  const toggleScanning = () => {
-    setIsScanning(!isScanning);
-  };
-
-  const switchCamera = () => {
-    if (availableCameras.length <= 1) return;
+  // Reset error and try again
+  const handleRetry = () => {
+    setError(null);
+    setScanAttempts(0);
+    setIsInitializing(true);
     
-    const currentIndex = availableCameras.findIndex(
-      camera => camera.deviceId === selectedCamera
-    );
-    
-    const nextIndex = (currentIndex + 1) % availableCameras.length;
-    setSelectedCamera(availableCameras[nextIndex].deviceId);
+    // Force a delay before retrying
+    setTimeout(() => {
+      const currentFacingMode = cameraFacingMode;
+      // Toggle camera mode to force a refresh
+      const newFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+      
+      // Stop current scanner if active
+      if (controlsRef.current) {
+        controlsRef.current.stop();
+        controlsRef.current = null;
+      }
+      
+      // Request camera access again
+      navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: newFacingMode,
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      }).then(stream => {
+        // Stop the temporary stream
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Re-initialize the camera
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+          const cameras = devices.filter(device => device.kind === 'videoinput');
+          
+          if (cameras.length > 0) {
+            setCameraList(cameras);
+            
+            // Select the appropriate camera again
+            const backCamera = cameras.find(camera => 
+              /back|rear|environment/i.test(camera.label)
+            );
+            
+            const preferredCamera = currentFacingMode === 'environment' 
+              ? backCamera || cameras[0]
+              : cameras.find(camera => /front|user/i.test(camera.label)) || cameras[0];
+            
+            setSelectedCamera(preferredCamera.deviceId);
+          }
+          
+          setIsInitializing(false);
+        });
+      }).catch(err => {
+        console.error('Camera access error during retry:', err);
+        setError('Failed to access camera during retry: ' + (err as Error).message);
+        setIsInitializing(false);
+      });
+    }, 500);
   };
 
   return (
-    <div className="qr-scanner w-full">
-      <div className="video-container relative w-full h-64 md:h-96 bg-black rounded-lg overflow-hidden">
-        {isScanning ? (
-          <>
-            <video 
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              autoPlay 
-              playsInline
-              muted
-            />
-            <div className="absolute inset-0 z-10 pointer-events-none">
-              <div className="flex items-center justify-center w-full h-full">
-                <div className="relative w-64 h-64">
-                  {/* Scan target */}
-                  <div className="absolute inset-0 border-2 border-white rounded-lg"></div>
-                  
-                  {/* Corner highlights */}
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-green-500 rounded-tl-lg"></div>
-                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-green-500 rounded-tr-lg"></div>
-                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-green-500 rounded-bl-lg"></div>
-                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-green-500 rounded-br-lg"></div>
-                  
-                  {/* Scan line animation */}
-                  <div className="absolute left-0 w-full h-1 bg-green-500 animate-scan-line"></div>
-                </div>
-              </div>
-              <div className="absolute bottom-4 left-0 right-0 text-center text-white text-sm">
-                <p>Position QR code inside the frame</p>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center justify-center h-full bg-gray-900 text-white">
-            <p>Camera is off</p>
+    <div className={cn('w-full rounded-xl overflow-hidden', className)}>
+      {error ? (
+        <div className="p-6 bg-dark-bg-tertiary rounded-xl border border-error/30 text-center">
+          <div className="inline-flex justify-center items-center w-12 h-12 rounded-full bg-error/10 text-error mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </div>
-        )}
-      </div>
-      
-      {error && (
-        <div className="mt-2 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          <p className="text-sm">{error}</p>
-        </div>
-      )}
-      
-      <div className="controls flex justify-center mt-4 gap-2">
-        <button
-          onClick={toggleScanning}
-          className={`px-4 py-2 rounded-md ${
-            isScanning 
-              ? 'bg-red-500 hover:bg-red-600 text-white' 
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
-          }`}
-        >
-          {isScanning ? 'Stop Camera' : 'Start Camera'}
-        </button>
-        
-        {isScanning && availableCameras.length > 1 && (
-          <button
-            onClick={switchCamera}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-md"
+          <h3 className="text-lg font-semibold text-white mb-2">Camera Error</h3>
+          <p className="text-red-300 mb-4">{error}</p>
+          <Button 
+            onClick={handleRetry}
+            variant="default"
+            size="md"
           >
-            Switch Camera
-          </button>
-        )}
-      </div>
-      
-      <style jsx>{`
-        @keyframes scan {
-          0% {
-            top: 0%;
-          }
-          50% {
-            top: 100%;
-          }
-          100% {
-            top: 0%;
-          }
-        }
-        .animate-scan-line {
-          animation: scan 3s linear infinite;
-        }
-      `}</style>
+            Try Again
+          </Button>
+        </div>
+      ) : isInitializing ? (
+        <div className="p-6 bg-dark-bg-tertiary rounded-xl border border-dark-border flex flex-col items-center justify-center min-h-[250px]">
+          <Spinner variant="primary" size="lg" className="mb-4" />
+          <p className="text-gray-300 animate-pulse">Initializing camera...</p>
+        </div>
+      ) : (
+        <>
+          {cameraList.length > 1 && (
+            <div className="bg-dark-bg-tertiary border-b border-dark-border p-3">
+              <label className="flex flex-col text-sm font-medium text-gray-300">
+                <span className="mb-1.5">Camera</span>
+                <select 
+                  value={selectedCamera || ''} 
+                  onChange={handleCameraChange}
+                  className="bg-dark-bg-primary border border-dark-border text-white rounded-md px-3 py-1.5 text-sm focus:ring-primary/30 focus:border-primary/70"
+                >
+                  {cameraList.map(camera => (
+                    <option key={camera.deviceId} value={camera.deviceId}>
+                      {camera.label || `Camera ${camera.deviceId.substr(0, 5)}...`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
+          
+          <div className="relative overflow-hidden aspect-video bg-black">
+            <video 
+              ref={videoRef} 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"></div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-2 border-primary rounded-lg w-3/5 h-2/5">
+                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary -translate-x-1 -translate-y-1"></div>
+                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary translate-x-1 -translate-y-1"></div>
+                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary -translate-x-1 translate-y-1"></div>
+                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary translate-x-1 translate-y-1"></div>
+              </div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 w-4/5 h-0.5 bg-primary/30"></div>
+              {isActive && (
+                <div className="absolute top-0 left-0 w-full h-1 bg-primary animate-pulse"></div>
+              )}
+            </div>
+          </div>
+          
+          <div className="p-3 bg-dark-bg-tertiary border-t border-dark-border text-center">
+            <p className="text-sm text-gray-300 font-medium">
+              Position the QR code inside the frame
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 } 

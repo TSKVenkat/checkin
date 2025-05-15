@@ -1,98 +1,79 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface DateSelectorProps {
-  startDate: Date;
-  endDate: Date;
-  onDateSelect: (date: Date) => void;
-  selectedDate?: Date;
+  initialDate?: Date;
+  onDateChange: (date: Date) => void;
+  minDate?: Date;
+  maxDate?: Date;
+  className?: string;
+  label?: string;
+  required?: boolean;
+  helperText?: string;
+  error?: string;
+  disabled?: boolean;
 }
 
-export default function DateSelector({ 
-  startDate, 
-  endDate, 
-  onDateSelect, 
-  selectedDate 
-}: DateSelectorProps) {
-  const [dates, setDates] = useState<Date[]>([]);
-  const [selected, setSelected] = useState<Date>(selectedDate || new Date());
+const DateSelector: React.FC<DateSelectorProps> = ({
+  initialDate = new Date(),
+  onDateChange,
+  minDate,
+  maxDate,
+  className = '',
+  label = 'Select Date',
+  required = false,
+  helperText,
+  error,
+  disabled = false
+}) => {
+  const [selectedDate, setSelectedDate] = useState<Date>(initialDate);
 
-  useEffect(() => {
-    // Generate array of dates between start and end dates
-    const dateArray: Date[] = [];
-    const currentDate = new Date(startDate);
-    
-    while (currentDate <= endDate) {
-      dateArray.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    
-    setDates(dateArray);
-    
-    // Set default selected date if not provided
-    if (!selectedDate) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      // Find if today is within the event range
-      const isWithinRange = dateArray.some(d => {
-        const date = new Date(d);
-        date.setHours(0, 0, 0, 0);
-        return date.getTime() === today.getTime();
-      });
-      
-      // If today is within range, set it as selected, otherwise use start date
-      if (isWithinRange) {
-        setSelected(today);
-        onDateSelect(today);
-      } else {
-        setSelected(new Date(startDate));
-        onDateSelect(new Date(startDate));
-      }
-    } else {
-      setSelected(selectedDate);
-    }
-  }, [startDate, endDate, selectedDate, onDateSelect]);
-
-  // Format date for display
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = new Date(e.target.value);
+    setSelectedDate(newDate);
+    onDateChange(newDate);
   };
 
-  // Handle date selection
-  const handleDateSelect = (date: Date) => {
-    setSelected(date);
-    onDateSelect(date);
-  };
-
-  // Check if date is selected
-  const isSelected = (date: Date): boolean => {
-    return date.toDateString() === selected.toDateString();
+  // Format date to YYYY-MM-DD for input value
+  const formatDateForInput = (date: Date): string => {
+    return date.toISOString().split('T')[0];
   };
 
   return (
-    <div className="date-selector mb-4">
-      <h3 className="text-md font-medium mb-2">Select Date:</h3>
-      <div className="flex flex-wrap gap-2">
-        {dates.map((date, index) => (
-          <button
-            key={index}
-            onClick={() => handleDateSelect(date)}
-            className={`px-4 py-2 rounded-md text-sm transition-colors ${
-              isSelected(date)
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-            }`}
-          >
-            {formatDate(date)}
-          </button>
-        ))}
+    <div className={cn("w-full space-y-1.5", className)}>
+      {label && (
+        <label htmlFor="date-select" className="block text-sm font-medium text-gray-200 mb-1">
+          {label}
+          {required && <span className="ml-1 text-error">*</span>}
+        </label>
+      )}
+      <div className="relative">
+        <input
+          id="date-select"
+          type="date"
+          className={cn(
+            "w-full rounded-lg border border-dark-border bg-dark-bg-tertiary text-white",
+            "px-4 py-2.5 shadow-sm transition-all duration-200",
+            "focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/70",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            error ? "border-error focus:border-error focus:ring-error/30" : ""
+          )}
+          value={formatDateForInput(selectedDate)}
+          onChange={handleDateChange}
+          min={minDate ? formatDateForInput(minDate) : undefined}
+          max={maxDate ? formatDateForInput(maxDate) : undefined}
+          disabled={disabled}
+        />
       </div>
+      {(helperText || error) && (
+        <p className={cn('mt-1 text-xs', error ? 'text-error' : 'text-gray-400')}>
+          {error || helperText}
+        </p>
+      )}
     </div>
   );
-} 
+};
+
+export default DateSelector; 

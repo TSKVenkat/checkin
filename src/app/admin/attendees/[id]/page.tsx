@@ -8,401 +8,447 @@ import DateSelector from '@/components/DateSelector';
 import DailyRecords from '@/components/DailyRecords';
 
 interface Attendee {
-  _id: string;
+  id: string;
+  uniqueId: string;
   name: string;
   email: string;
-  phone: string;
   role: string;
-  uniqueId: string;
-  qrCodeUrl: string;
-  registrationStatus: {
-    isCheckedIn: boolean;
-    checkedInAt?: string;
-    checkedInLocation?: string;
+  isCheckedIn: boolean;
+  checkedInAt?: string;
+  phoneNumber?: string;
+  profilePhoto?: string;
+  organization?: string;
+  jobTitle?: string;
+  ticketType?: string;
+  registrationDate?: string;
+  emergencyContact?: {
+    name: string;
+    relationship: string;
+    phoneNumber: string;
   };
-  resourceClaims: {
-    lunch: {
+  resourceClaims?: {
+    lunch?: {
       claimed: boolean;
       claimedAt?: string;
-      claimedLocation?: string;
     };
-    kit: {
+    kit?: {
       claimed: boolean;
       claimedAt?: string;
-      claimedLocation?: string;
     };
   };
-  emergencyStatus: {
-    lastKnownCheckIn?: string;
-    safetyConfirmed: boolean;
-    safetyConfirmedAt?: string;
-    currentZone?: string;
+}
+
+interface AttendanceRecord {
+  id: string;
+  date: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  area?: string;
+  resources?: {
+    lunch?: boolean;
+    kit?: boolean;
+    badge?: boolean;
+    swag?: boolean;
   };
-  dailyRecords: Array<{
-    date: string;
-    checkedIn: boolean;
-    checkedInAt?: string;
-    lunchClaimed: boolean;
-    lunchClaimedAt?: string;
-    kitClaimed: boolean;
-    kitClaimedAt?: string;
-  }>;
+  notes?: string;
 }
 
-interface Event {
-  _id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-}
-
-export default function AttendeeDetailsPage() {
+export default function AttendeeDetailPage() {
   const params = useParams();
   const router = useRouter();
   const attendeeId = params.id as string;
-  
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [attendee, setAttendee] = useState<Attendee | null>(null);
-  const [event, setEvent] = useState<Event | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [dailyRecords, setDailyRecords] = useState<AttendanceRecord[]>([]);
   
-  // Fetch attendee and event data
+  // Fetch attendee data
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAttendee = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // In a real application, these would be actual API calls
-        // For demo purposes, we'll use mock data
+        // In a real application, you would fetch data from the API:
+        // const response = await axios.get(`/api/attendees/${attendeeId}`);
+        // setAttendee(response.data);
         
-        // Mock attendee data
+        // For now, using mock data
         const mockAttendee: Attendee = {
-          _id: attendeeId,
-          name: 'John Doe',
-          email: 'john.doe@example.com',
-          phone: '+1 (555) 123-4567',
-          role: 'Participant',
-          uniqueId: 'u_123456',
-          qrCodeUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA',
-          registrationStatus: {
-            isCheckedIn: true,
-            checkedInAt: '2023-05-10T09:30:00Z',
-            checkedInLocation: 'Main Entrance'
+          id: attendeeId,
+          uniqueId: `uid_${Math.random().toString(36).substring(2, 10)}`,
+          name: `Attendee ${attendeeId.split('_')[1]}`,
+          email: `attendee${attendeeId.split('_')[1]}@example.com`,
+          role: Math.random() > 0.75 ? 'VIP' : 'Attendee',
+          isCheckedIn: Math.random() > 0.5,
+          checkedInAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 10000000).toISOString() : undefined,
+          phoneNumber: '+1 (555) 123-4567',
+          organization: 'Example Corp',
+          jobTitle: 'Software Engineer',
+          ticketType: Math.random() > 0.7 ? 'Premium' : 'Standard',
+          registrationDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+          emergencyContact: {
+            name: 'Emergency Contact',
+            relationship: 'Family',
+            phoneNumber: '+1 (555) 987-6543'
           },
           resourceClaims: {
             lunch: {
-              claimed: true,
-              claimedAt: '2023-05-10T12:15:00Z',
-              claimedLocation: 'Cafeteria'
+              claimed: Math.random() > 0.5,
+              claimedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 5000000).toISOString() : undefined
             },
             kit: {
-              claimed: true,
-              claimedAt: '2023-05-10T10:00:00Z',
-              claimedLocation: 'Welcome Desk'
+              claimed: Math.random() > 0.5,
+              claimedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 8000000).toISOString() : undefined
             }
-          },
-          emergencyStatus: {
-            lastKnownCheckIn: '2023-05-10T15:45:00Z',
-            safetyConfirmed: true,
-            safetyConfirmedAt: '2023-05-10T16:00:00Z',
-            currentZone: 'Main Hall'
-          },
-          dailyRecords: [
-            {
-              date: '2023-05-10T00:00:00Z',
-              checkedIn: true,
-              checkedInAt: '2023-05-10T09:30:00Z',
-              lunchClaimed: true,
-              lunchClaimedAt: '2023-05-10T12:15:00Z',
-              kitClaimed: true,
-              kitClaimedAt: '2023-05-10T10:00:00Z'
-            },
-            {
-              date: '2023-05-11T00:00:00Z',
-              checkedIn: true,
-              checkedInAt: '2023-05-11T09:45:00Z',
-              lunchClaimed: true,
-              lunchClaimedAt: '2023-05-11T12:30:00Z',
-              kitClaimed: false,
-              kitClaimedAt: undefined
-            },
-            {
-              date: '2023-05-12T00:00:00Z',
-              checkedIn: false,
-              checkedInAt: undefined,
-              lunchClaimed: false,
-              lunchClaimedAt: undefined,
-              kitClaimed: false,
-              kitClaimedAt: undefined
-            }
-          ]
-        };
-        
-        // Mock event data
-        const mockEvent: Event = {
-          _id: 'evt_123',
-          name: 'Annual Hackathon 2023',
-          startDate: '2023-05-10T00:00:00Z',
-          endDate: '2023-05-12T23:59:59Z'
+          }
         };
         
         setAttendee(mockAttendee);
-        setEvent(mockEvent);
-        
-        // Set selected date to first day of event
-        setSelectedDate(new Date(mockEvent.startDate));
         
       } catch (err) {
-        console.error('Failed to fetch attendee data:', err);
-        setError('Failed to load attendee data. Please try again.');
+        console.error('Failed to fetch attendee:', err);
+        setError('Failed to load attendee details. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
     
-    fetchData();
+    fetchAttendee();
   }, [attendeeId]);
   
-  // Print QR code
-  const handlePrintQR = () => {
+  // Fetch daily records for the selected date
+  useEffect(() => {
+    const fetchDailyRecords = async () => {
+      try {
+        // In a real application, you would fetch data from the API:
+        // const response = await axios.get(`/api/attendees/${attendeeId}/records?date=${selectedDate.toISOString().split('T')[0]}`);
+        // setDailyRecords(response.data);
+        
+        // For now, using mock data
+        // Random number of records for demonstration
+        const numRecords = Math.floor(Math.random() * 3) + (selectedDate.getDay() % 2 === 0 ? 1 : 0);
+        
+        if (numRecords === 0) {
+          setDailyRecords([]);
+          return;
+        }
+        
+        const mockRecords: AttendanceRecord[] = Array.from({ length: numRecords }, (_, i) => {
+          const checkInTime = new Date(selectedDate);
+          checkInTime.setHours(8 + i, Math.floor(Math.random() * 60), 0);
+          
+          const checkOutTime = new Date(selectedDate);
+          checkOutTime.setHours(16 + i, Math.floor(Math.random() * 60), 0);
+          
+          return {
+            id: `record_${i}_${selectedDate.toISOString().split('T')[0]}`,
+            date: selectedDate.toISOString().split('T')[0],
+            checkInTime: checkInTime.toISOString(),
+            checkOutTime: i === 0 ? checkOutTime.toISOString() : undefined,
+            area: ['Main Hall', 'Conference Room A', 'Exhibition Area'][i % 3],
+            resources: {
+              lunch: i === 0,
+              kit: i === 1,
+              badge: true,
+              swag: i === 2
+            },
+            notes: i === 0 ? 'Attended morning session' : undefined
+          };
+        });
+        
+        setDailyRecords(mockRecords);
+        
+      } catch (err) {
+        console.error('Failed to fetch daily records:', err);
+        // Not setting an error here as it's not critical
+        setDailyRecords([]);
+      }
+    };
+    
+    fetchDailyRecords();
+  }, [selectedDate, attendeeId]);
+  
+  const handleDateChange = (date: Date) => {
+    setSelectedDate(date);
+  };
+  
+  const handleAddNote = (recordId: string, note: string) => {
+    setDailyRecords(prevRecords => 
+      prevRecords.map(record => 
+        record.id === recordId 
+          ? { ...record, notes: note }
+          : record
+      )
+    );
+    
+    // In a real application, you would save the note to the API:
+    // axios.post(`/api/attendees/${attendeeId}/records/${recordId}/notes`, { note });
+  };
+  
+  const handleCheckIn = async () => {
     if (!attendee) return;
     
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert('Please allow pop-ups to print QR code');
-      return;
-    }
-    
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>QR Code: ${attendee.name}</title>
-          <style>
-            body { font-family: sans-serif; text-align: center; }
-            .qr-container { margin: 30px auto; }
-            .attendee-info { margin-bottom: 20px; }
-          </style>
-        </head>
-        <body>
-          <div class="attendee-info">
-            <h2>${attendee.name}</h2>
-            <p>${attendee.role}</p>
-          </div>
-          <div class="qr-container">
-            <img src="${attendee.qrCodeUrl}" alt="QR Code" style="max-width: 300px;" />
-          </div>
-          <p>Unique ID: ${attendee.uniqueId}</p>
-          <script>
-            setTimeout(() => window.print(), 500);
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
-  
-  // Format date for display
-  const formatDateTime = (dateString?: string): string => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
-  };
-  
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Attendee Details</h1>
-        <Link 
-          href="/admin" 
-          className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 text-gray-800"
-        >
-          Back to Dashboard
-        </Link>
-      </div>
+    try {
+      // In a real application, you would make an API call:
+      // await axios.post(`/api/attendees/${attendeeId}/check-in`);
       
-      {loading ? (
-        <div className="flex justify-center my-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
-        </div>
-      ) : error ? (
-        <div className="bg-red-100 p-4 rounded-md text-red-700 mb-8">
-          {error}
-        </div>
-      ) : attendee && event ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Attendee Details Card */}
-          <div className="bg-white p-6 rounded-lg shadow col-span-1">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold">Personal Information</h2>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => router.push(`/admin/attendees/${attendeeId}/edit`)}
-                  className="p-2 bg-blue-100 rounded-md text-blue-600 hover:bg-blue-200"
-                  title="Edit Attendee"
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={handlePrintQR}
-                  className="p-2 bg-purple-100 rounded-md text-purple-600 hover:bg-purple-200"
-                  title="Print QR Code"
-                >
-                  🖨️
-                </button>
-              </div>
+      // For now, we'll just update the local state
+      setAttendee({
+        ...attendee,
+        isCheckedIn: true,
+        checkedInAt: new Date().toISOString()
+      });
+      
+    } catch (err) {
+      console.error('Failed to check in attendee:', err);
+      alert('Failed to check in attendee. Please try again.');
+    }
+  };
+  
+  const handleClaimResource = async (resourceType: 'lunch' | 'kit') => {
+    if (!attendee || !attendee.resourceClaims) return;
+    
+    try {
+      // In a real application, you would make an API call:
+      // await axios.post(`/api/attendees/${attendeeId}/claim-resource`, { resourceType });
+      
+      // For now, we'll just update the local state
+      const newResourceClaims = {
+        ...attendee.resourceClaims,
+        [resourceType]: {
+          claimed: true,
+          claimedAt: new Date().toISOString()
+        }
+      };
+      
+      setAttendee({
+        ...attendee,
+        resourceClaims: newResourceClaims
+      });
+      
+    } catch (err) {
+      console.error(`Failed to claim ${resourceType}:`, err);
+      alert(`Failed to claim ${resourceType}. Please try again.`);
+    }
+  };
+  
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
+      </div>
+    );
+  }
+  
+  if (error || !attendee) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
             </div>
-            
-            <div className="mb-6">
-              <img 
-                src={attendee.qrCodeUrl} 
-                alt="QR Code" 
-                className="mx-auto w-48 h-48 mb-4"
-              />
-              <p className="text-center text-sm text-gray-500 break-all">
-                {attendee.uniqueId}
+            <div className="ml-3">
+              <p className="text-sm text-red-700">
+                {error || "Failed to load attendee. Please try again."}
               </p>
             </div>
-            
-            <div className="space-y-3">
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Name</h3>
-                <p className="text-lg">{attendee.name}</p>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <button
+            onClick={() => router.push('/admin/attendees')}
+            className="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          >
+            Back to Attendees
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mb-8 flex justify-between items-center">
+        <div className="flex items-center">
+          <Link
+            href="/admin/attendees"
+            className="mr-4 text-blue-600 hover:text-blue-800"
+          >
+            ← Back to Attendees
+          </Link>
+          <h1 className="text-3xl font-bold">Attendee Details</h1>
+        </div>
+        <div className="flex space-x-3">
+          {!attendee.isCheckedIn && (
+            <button
+              onClick={handleCheckIn}
+              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700"
+            >
+              Check In
+            </button>
+          )}
+          <button
+            onClick={() => router.push(`/admin/attendees/${attendeeId}/edit`)}
+            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+          >
+            Edit
+          </button>
+        </div>
+      </div>
+      
+      <div className="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+        <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-xl font-semibold text-gray-800">Attendee Information</h2>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Name</div>
+                <div className="text-lg font-semibold text-gray-900">{attendee.name}</div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Email</h3>
-                <p className="text-lg">{attendee.email}</p>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Email</div>
+                <div className="text-lg text-gray-900">{attendee.email}</div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Phone</h3>
-                <p className="text-lg">{attendee.phone}</p>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Phone</div>
+                <div className="text-lg text-gray-900">{attendee.phoneNumber || 'Not provided'}</div>
               </div>
-              <div>
-                <h3 className="text-sm font-medium text-gray-500">Role</h3>
-                <p className="text-lg">
-                  <span className={`px-2 py-1 text-sm rounded-full ${
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Organization</div>
+                <div className="text-lg text-gray-900">{attendee.organization || 'Not provided'}</div>
+              </div>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Job Title</div>
+                <div className="text-lg text-gray-900">{attendee.jobTitle || 'Not provided'}</div>
+              </div>
+            </div>
+            <div>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Unique ID</div>
+                <div className="text-lg font-mono bg-gray-100 p-2 rounded">{attendee.uniqueId}</div>
+              </div>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Role</div>
+                <div className="inline-flex rounded-full px-3 py-1 text-sm font-semibold">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     attendee.role === 'VIP' 
                       ? 'bg-purple-100 text-purple-800' 
-                      : 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
                   }`}>
                     {attendee.role}
                   </span>
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          {/* Current Status Card */}
-          <div className="bg-white p-6 rounded-lg shadow col-span-2">
-            <h2 className="text-xl font-semibold mb-6">Event Status</h2>
-            
-            {/* Date Selector */}
-            {event && (
-              <DateSelector
-                startDate={new Date(event.startDate)}
-                endDate={new Date(event.endDate)}
-                selectedDate={selectedDate}
-                onDateChange={setSelectedDate}
-              />
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Check-In Status</h3>
-                {attendee.registrationStatus.isCheckedIn ? (
-                  <div>
-                    <span className="text-green-600 font-medium">✓ Checked In</span>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {formatDateTime(attendee.registrationStatus.checkedInAt)}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Location: {attendee.registrationStatus.checkedInLocation}
-                    </p>
-                  </div>
-                ) : (
-                  <span className="text-red-600 font-medium">✗ Not Checked In</span>
-                )}
-              </div>
-              
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Lunch Status</h3>
-                {attendee.resourceClaims.lunch.claimed ? (
-                  <div>
-                    <span className="text-green-600 font-medium">✓ Claimed</span>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {formatDateTime(attendee.resourceClaims.lunch.claimedAt)}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Location: {attendee.resourceClaims.lunch.claimedLocation}
-                    </p>
-                  </div>
-                ) : (
-                  <span className="text-red-600 font-medium">✗ Not Claimed</span>
-                )}
-              </div>
-              
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-500 mb-1">Welcome Kit Status</h3>
-                {attendee.resourceClaims.kit.claimed ? (
-                  <div>
-                    <span className="text-green-600 font-medium">✓ Claimed</span>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {formatDateTime(attendee.resourceClaims.kit.claimedAt)}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Location: {attendee.resourceClaims.kit.claimedLocation}
-                    </p>
-                  </div>
-                ) : (
-                  <span className="text-red-600 font-medium">✗ Not Claimed</span>
-                )}
-              </div>
-            </div>
-            
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h3 className="text-sm font-medium text-gray-500 mb-1">Safety Status</h3>
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm">
-                    <span className="font-medium">Last Known Location:</span> {attendee.emergencyStatus.currentZone || 'Unknown'}
-                  </p>
-                  <p className="text-sm">
-                    <span className="font-medium">Last Check-in:</span> {formatDateTime(attendee.emergencyStatus.lastKnownCheckIn)}
-                  </p>
                 </div>
+              </div>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Check-In Status</div>
                 <div>
-                  {attendee.emergencyStatus.safetyConfirmed ? (
-                    <div className="text-right">
-                      <span className="px-2 py-1 text-sm rounded-full bg-green-100 text-green-800">
-                        ✓ Safety Confirmed
-                      </span>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatDateTime(attendee.emergencyStatus.safetyConfirmedAt)}
-                      </p>
-                    </div>
-                  ) : (
-                    <span className="px-2 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
-                      Safety Not Confirmed
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    attendee.isCheckedIn 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {attendee.isCheckedIn ? 'Checked In' : 'Not Checked In'}
+                  </span>
+                  {attendee.isCheckedIn && attendee.checkedInAt && (
+                    <span className="block text-xs text-gray-500 mt-1">
+                      {new Date(attendee.checkedInAt).toLocaleString()}
                     </span>
                   )}
                 </div>
               </div>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Resources</div>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => handleClaimResource('lunch')}
+                    disabled={attendee.resourceClaims?.lunch?.claimed}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${
+                      attendee.resourceClaims?.lunch?.claimed
+                        ? 'bg-blue-100 text-blue-800 cursor-default'
+                        : 'bg-white border border-blue-600 text-blue-600 hover:bg-blue-50'
+                    }`}
+                  >
+                    {attendee.resourceClaims?.lunch?.claimed ? 'Lunch Claimed' : 'Claim Lunch'}
+                  </button>
+                  <button
+                    onClick={() => handleClaimResource('kit')}
+                    disabled={attendee.resourceClaims?.kit?.claimed}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${
+                      attendee.resourceClaims?.kit?.claimed
+                        ? 'bg-green-100 text-green-800 cursor-default'
+                        : 'bg-white border border-green-600 text-green-600 hover:bg-green-50'
+                    }`}
+                  >
+                    {attendee.resourceClaims?.kit?.claimed ? 'Kit Claimed' : 'Claim Kit'}
+                  </button>
+                </div>
+              </div>
+              <div className="mb-6">
+                <div className="text-sm font-medium text-gray-500 mb-1">Registration Date</div>
+                <div className="text-lg text-gray-900">
+                  {attendee.registrationDate 
+                    ? new Date(attendee.registrationDate).toLocaleDateString() 
+                    : 'Not available'}
+                </div>
+              </div>
             </div>
           </div>
-          
-          {/* Attendance History */}
-          <div className="bg-white p-6 rounded-lg shadow col-span-1 lg:col-span-3">
-            <DailyRecords 
-              records={attendee.dailyRecords} 
-              title="Multi-Day Attendance Records"
+        </div>
+      </div>
+      
+      <div className="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+        <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-xl font-semibold text-gray-800">Attendance Records</h2>
+        </div>
+        <div className="p-6">
+          <div className="mb-6">
+            <DateSelector
+              initialDate={selectedDate}
+              onDateChange={handleDateChange}
+              minDate={new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)}
+              maxDate={new Date()}
             />
           </div>
+          
+          <DailyRecords
+            records={dailyRecords}
+            onAddNote={handleAddNote}
+          />
         </div>
-      ) : (
-        <div className="bg-yellow-100 p-4 rounded-md text-yellow-700">
-          Attendee not found
+      </div>
+      
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-xl font-semibold text-gray-800">Emergency Contact</h2>
         </div>
-      )}
+        <div className="p-6">
+          {attendee.emergencyContact ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <div className="text-sm font-medium text-gray-500 mb-1">Name</div>
+                <div className="text-lg text-gray-900">{attendee.emergencyContact.name}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-500 mb-1">Relationship</div>
+                <div className="text-lg text-gray-900">{attendee.emergencyContact.relationship}</div>
+              </div>
+              <div>
+                <div className="text-sm font-medium text-gray-500 mb-1">Phone</div>
+                <div className="text-lg text-gray-900">{attendee.emergencyContact.phoneNumber}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-500 italic">No emergency contact provided</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 } 

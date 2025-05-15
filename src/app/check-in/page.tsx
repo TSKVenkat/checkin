@@ -1,330 +1,450 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useMemo } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import QRScanner from '@/components/QRScanner';
-import DashboardLayout from '@/components/DashboardLayout';
+import Link from 'next/link';
+import { useRecentCheckins } from '@/lib/query/hooks';
+import { useAuthSession, tokenStorage } from '@/lib/query/auth-hooks';
+import axios from 'axios';
 
-interface AttendeeInfo {
+interface CheckInResponse {
+  success: boolean;
+  message: string;
+  attendee?: {
+    id: string;
+    name: string;
+    email: string;
+    checkedInAt: string;
+    checkedInLocation?: string;
+  };
+  checkInStatus?: 'success' | 'duplicate';
+}
+
+// Add a proper interface for checkin data
+interface CheckInRecord {
+  id: string;
   name: string;
   email: string;
-  role: string;
-  registrationStatus: {
-    isCheckedIn: boolean;
-    checkedInAt?: string;
-    checkedInBy?: string;
-    checkedInLocation?: string;
-  }
+  checkedInAt: string;
+  location?: string;
 }
 
 export default function CheckInPage() {
-  const [user, setUser] = useState<any | null>(null);
-  const [isScanning, setIsScanning] = useState(true);
-  const [checkInLocation, setCheckInLocation] = useState('Main Entrance');
-  const [manualId, setManualId] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [scanning, setScanning] = useState<boolean>(true);
+  const [manualId, setManualId] = useState<string>('');
+  const [locationOptions, setLocationOptions] = useState<string[]>([]);
+  const [location, setLocation] = useState<string>('');
+  const [checkInResult, setCheckInResult] = useState<CheckInResponse | null>(null);
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [attendeeInfo, setAttendeeInfo] = useState<AttendeeInfo | null>(null);
-  const [isAlreadyCheckedIn, setIsAlreadyCheckedIn] = useState(false);
+  const [scanCount, setScanCount] = useState<number>(0);
+  const [staffId, setStaffId] = useState<string>('');
 
-  // Location options
-  const locationOptions = [
-    'Main Entrance',
-    'Side Entrance',
-    'VIP Entrance',
-    'Staff Desk'
-  ];
-
-  // Get user info from localStorage
+  // Get day parameter for multi-day events
+  const today = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const [day, setDay] = useState<string>(today);
+  
+  // Check authentication
+  const { data: sessionData } = useAuthSession();
+  
+  // Setup user ID from auth session
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    if (sessionData?.isAuthenticated) {
+      const user = tokenStorage.getUser();
+      if (user?.id) {
+        setStaffId(user.id);
+      }
+    }
+  }, [sessionData]);
+
+  // Fetch event locations from API
+  useEffect(() => {
+    const fetchLocations = async () => {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error('Failed to parse user from localStorage');
-      }
-    }
-  }, []);
-
-  // Handle QR code scan
-  const handleScan = async (data: string) => {
-    try {
-      setError(null);
-      setSuccessMessage(null);
-      setAttendeeInfo(null);
-      setIsAlreadyCheckedIn(false);
-      setLoading(true);
-      
-      if (!user) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-      
-      // Reset scanning state to prevent multiple scans
-      setIsScanning(false);
-      
-      // Process check-in
-      await processCheckIn(data);
-      
-    } catch (err: any) {
-      console.error('Scan error:', err);
-      setError(err.message || 'Failed to process QR code');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle manual ID check-in
-  const handleManualCheckIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      setError(null);
-      setSuccessMessage(null);
-      setAttendeeInfo(null);
-      setIsAlreadyCheckedIn(false);
-      setLoading(true);
-      
-      if (!user) {
-        setError('Authentication required');
-        setLoading(false);
-        return;
-      }
-      
-      if (!manualId.trim()) {
-        setError('Please enter an ID or email');
-        setLoading(false);
-        return;
-      }
-      
-      // Process check-in
-      await processCheckIn(null, manualId.trim());
-      
-      // Clear the input field
-      setManualId('');
-      
-    } catch (err: any) {
-      console.error('Manual check-in error:', err);
-      setError(err.message || 'Failed to process check-in');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Common function to process check-in
-  const processCheckIn = async (qrData: string | null, manualIdValue: string = '') => {
-    try {
-      // Get token from localStorage
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication token not found');
-      }
-      
-      const response = await axios.post(
-        '/api/attendees/check-in',
-        {
-          qrData,
-          manualId: manualIdValue,
-          location: checkInLocation,
-          staffId: user.id
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const { data } = await axios.get('/api/events/current');
+        if (data.success && data.event) {
+          if (data.event.locations && data.event.locations.length > 0) {
+            const locations = data.event.locations.map((loc: any) => loc.name);
+            setLocationOptions(locations);
+            setLocation(locations[0] || '');
+          } else {
+            // Fallback locations if none provided by API
+            const defaultLocations = ['Main Entrance', 'VIP Entrance', 'Side Entrance', 'Workshop Area'];
+            setLocationOptions(defaultLocations);
+            setLocation(defaultLocations[0]);
           }
         }
-      );
-      
-      if (response.data.success) {
-        setSuccessMessage(`${response.data.attendee.name} checked in successfully!`);
-        setAttendeeInfo(response.data.attendee);
-      } else {
-        throw new Error(response.data.message || 'Check-in failed');
+      } catch (err) {
+        console.error('Error fetching event information:', err);
+        // Fallback locations if API fails
+        const defaultLocations = ['Main Entrance', 'VIP Entrance', 'Side Entrance', 'Workshop Area'];
+        setLocationOptions(defaultLocations);
+        setLocation(defaultLocations[0]);
+      }
+    };
+    
+    fetchLocations();
+  }, []);
+
+  useEffect(() => {
+    // Check if the day parameter is in the URL
+    const params = new URLSearchParams(window.location.search);
+    const dayParam = params.get('day');
+    if (dayParam) {
+      setDay(dayParam);
+    } else {
+      // Update URL with today's date as default
+      const newUrl = `${window.location.pathname}?day=${today}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [today]);
+
+  // Fetch recent check-ins using our custom hook
+  const { 
+    data: recentData,
+    isLoading: recentLoading 
+  } = useRecentCheckins(day, 5);
+
+  // Get recent checkins from query data
+  const recentCheckins = useMemo<CheckInRecord[]>(() => 
+    recentData?.attendees || [], 
+    [recentData]
+  );
+
+  // Check-in mutation
+  const checkInMutation = useMutation({
+    mutationFn: async (attendeeData: { id: string; location: string; eventId?: string }) => {
+      if (!staffId) {
+        throw new Error('Staff identification missing');
       }
       
-    } catch (err: any) {
-      // Handle case where attendee is already checked in
-      if (err.response?.status === 409) {
-        setIsAlreadyCheckedIn(true);
-        setAttendeeInfo(err.response.data.attendee);
-        throw new Error(`Already checked in at ${new Date(err.response.data.attendee.registrationStatus.checkedInAt).toLocaleString()}`);
+      const response = await fetch('/api/attendees/check-in', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          attendeeId: attendeeData.id,
+          location: attendeeData.location,
+          staffId,
+          day: attendeeData.eventId || day,
+          eventId: attendeeData.eventId
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Check-in failed');
       }
       
-      // Handle other errors
-      throw new Error(err.response?.data?.message || err.message || 'Check-in failed');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setCheckInResult(data);
+      setIsProcessing(false);
+      setScanCount(prev => prev + 1);
+    },
+    onError: (err) => {
+      setError(err instanceof Error ? err.message : 'Check-in failed');
+      setIsProcessing(false);
+    }
+  });
+
+  const handleQRScan = async (data: string) => {
+    if (isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+      setError(null);
+      setCheckInResult(null);
+      
+      // Log the scanned data for debugging
+      console.log('Scanned QR data:', data);
+      
+      // Process the scanned QR code
+      // Format should be: attendee_id or a JSON with at least id field
+      let attendeeId = data;
+      
+      // If the QR contains JSON data
+      if (data.startsWith('{') && data.endsWith('}')) {
+        try {
+          const parsedData = JSON.parse(data);
+          attendeeId = parsedData.id || parsedData.attendeeId;
+          console.log('Parsed attendee ID from JSON:', attendeeId);
+        } catch (e) {
+          // If JSON parsing fails, use the raw data
+          console.error('Failed to parse QR data:', e);
+        }
+      }
+      
+      if (!attendeeId) {
+        throw new Error('Invalid QR code data');
+      }
+      
+      // Get event ID if available
+      const eventId = localStorage.getItem('currentEventId');
+      
+      // Use the mutation to handle the check-in request
+      checkInMutation.mutate({ 
+        id: attendeeId, 
+        location,
+        eventId: eventId || undefined
+      });
+      
+    } catch (err) {
+      console.error('QR scan error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to process QR code');
+      setIsProcessing(false);
     }
   };
 
-  // Reset and start a new scan
-  const handleReset = () => {
+  const handleManualCheckIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isProcessing || !manualId.trim()) return;
+    
+    try {
+      setIsProcessing(true);
+      setError(null);
+      setCheckInResult(null);
+      
+      // Get event ID if available
+      const eventId = localStorage.getItem('currentEventId');
+      
+      // Use the mutation to handle the check-in request
+      checkInMutation.mutate({ 
+        id: manualId.trim(), 
+        location,
+        eventId: eventId || undefined
+      });
+      
+    } catch (err) {
+      console.error('Manual check-in error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to check in attendee');
+      setIsProcessing(false);
+    }
+  };
+
+  const resetScan = () => {
+    setCheckInResult(null);
     setError(null);
-    setSuccessMessage(null);
-    setAttendeeInfo(null);
-    setIsAlreadyCheckedIn(false);
     setManualId('');
-    setIsScanning(true);
+    setScanning(true);
+  };
+
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    }).format(date);
   };
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Attendee Check-In</h1>
+    <div className="min-h-screen bg-slate-900 text-white py-12 px-4">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Attendee Check-In</h1>
+          <Link href="/dashboard" className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+            Back to Dashboard
+          </Link>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">QR Code Scanner</h2>
-                
-                <div className="mb-4">
-                  <QRScanner 
-                    onScan={handleScan} 
-                    onError={(err) => setError(err.message)}
-                    cameraFacingMode="environment"
-                    scanning={isScanning}
-                  />
-                </div>
-                
-                <div className="mt-4 border-t pt-4">
-                  <h3 className="text-md font-medium text-gray-700 mb-2">Or Enter ID Manually</h3>
-                  <form onSubmit={handleManualCheckIn} className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={manualId}
-                      onChange={(e) => setManualId(e.target.value)}
-                      placeholder="Enter email or ID"
-                      className="flex-1 rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-blue-500 focus:border-blue-500"
-                      disabled={loading}
-                    />
-                    <button
-                      type="submit"
-                      disabled={loading || !manualId.trim()}
-                      className={`px-4 py-2 rounded-md ${
-                        loading || !manualId.trim()
-                          ? 'bg-gray-300 cursor-not-allowed'
-                          : 'bg-blue-600 hover:bg-blue-700 text-white'
-                      }`}
-                    >
-                      Check In
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
+        
+        {error && (
+          <div className="bg-red-900/50 border-l-4 border-red-500 text-red-100 p-4 mb-6" role="alert">
+            <p className="font-bold">Error</p>
+            <p>{error}</p>
           </div>
-          
-          <div className="col-span-1">
-            <div className="bg-white shadow-sm rounded-lg overflow-hidden">
+        )}
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <div className="bg-slate-800 rounded-lg shadow-xl overflow-hidden">
+              <div className="p-4 bg-slate-700 border-b border-slate-600">
+                <h2 className="text-xl font-medium">Scan QR Code</h2>
+              </div>
+              
               <div className="p-6">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Check-in Settings</h2>
-                
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
-                  </label>
+                <div className="mb-6">
+                  <label className="block mb-2">Check-in Location</label>
                   <select
-                    value={checkInLocation}
-                    onChange={(e) => setCheckInLocation(e.target.value)}
-                    className="block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="w-full px-4 py-2 rounded-md bg-slate-700 border border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                   >
-                    {locationOptions.map((location) => (
-                      <option key={location} value={location}>
-                        {location}
-                      </option>
+                    {locationOptions.map((loc) => (
+                      <option key={loc} value={loc}>{loc}</option>
                     ))}
                   </select>
                 </div>
                 
-                <div className="flex flex-col space-y-4">
-                  <button
-                    onClick={handleReset}
-                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md shadow-sm"
-                  >
-                    New Check-in
-                  </button>
+                {scanning && !checkInResult ? (
+                  <div className="aspect-video rounded-lg overflow-hidden bg-slate-900 relative">
+                    {/* Add notification for the camera permissions */}
+                    <p className="absolute top-2 left-2 right-2 z-20 bg-blue-900/80 text-white p-3 rounded text-sm font-medium border border-blue-500 shadow-lg">
+                      Please allow camera access when prompted. If you don't see a permission prompt, check your browser settings.
+                    </p>
+                    
+                    <QRScanner onScanAction={handleQRScan} />
+                    
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                      <button
+                        onClick={() => setScanning(false)}
+                        className="bg-white text-slate-900 px-4 py-2 rounded-md font-medium hover:bg-gray-200"
+                      >
+                        Manual Entry
+                      </button>
+                    </div>
+                  </div>
+                ) : !scanning && !checkInResult ? (
+                  <div className="bg-slate-900 rounded-lg p-6">
+                    <h3 className="text-lg font-medium mb-4">Manual Check-in</h3>
+                    <form onSubmit={handleManualCheckIn}>
+                      <div className="mb-4">
+                        <label htmlFor="manualId" className="block mb-1">Attendee ID</label>
+                        <input
+                          type="text"
+                          id="manualId"
+                          value={manualId}
+                          onChange={(e) => setManualId(e.target.value)}
+                          className="w-full px-4 py-2 rounded-md bg-slate-700 border border-slate-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                          placeholder="Enter attendee ID or scan code"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          type="submit"
+                          disabled={isProcessing}
+                          className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 disabled:opacity-70"
+                        >
+                          {isProcessing ? 'Processing...' : 'Check In'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setScanning(true)}
+                          className="bg-slate-700 text-white px-4 py-2 rounded-md font-medium hover:bg-slate-600"
+                        >
+                          Scan QR
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                ) : (
+                  <div className="bg-slate-900 rounded-lg p-6">
+                    <div className={`mb-6 p-4 rounded-md ${
+                      checkInResult?.success 
+                        ? 'bg-green-900/30 border border-green-700' 
+                        : 'bg-red-900/30 border border-red-700'
+                    }`}>
+                      <h3 className="text-lg font-medium mb-2">
+                        {checkInResult?.success ? 'Check-in Successful' : 'Check-in Failed'}
+                      </h3>
+                      <p>{checkInResult?.message}</p>
+                      
+                      {checkInResult?.attendee && (
+                        <div className="mt-4 bg-slate-800/50 p-3 rounded-md">
+                          <p><strong>Name:</strong> {checkInResult.attendee.name}</p>
+                          <p><strong>Email:</strong> {checkInResult.attendee.email}</p>
+                          <p><strong>Time:</strong> {formatDate(checkInResult.attendee.checkedInAt)}</p>
+                          {checkInResult.attendee.checkedInLocation && (
+                            <p><strong>Location:</strong> {checkInResult.attendee.checkedInLocation}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button
+                        onClick={resetScan}
+                        className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700"
+                      >
+                        Check In Another
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="bg-gray-800 rounded-lg overflow-hidden">
+              <div className="p-4 border-b border-gray-700">
+                <h2 className="text-lg font-medium">Recent Check-ins</h2>
+              </div>
+              <div>
+                {recentLoading ? (
+                  <div className="p-8 text-center text-gray-400">
+                    <p>Loading recent check-ins...</p>
+                  </div>
+                ) : recentCheckins.length === 0 ? (
+                  <div className="p-8 text-center text-gray-400">
+                    <p>No recent check-ins</p>
+                  </div>
+                ) : (
+                  <ul className="divide-y divide-gray-700">
+                    {recentCheckins.map((checkin) => (
+                      <li key={checkin.id} className="px-4 py-3">
+                        <div className="flex justify-between">
+                          <div>
+                            <p className="font-medium text-white">{checkin.name}</p>
+                            <p className="text-sm text-gray-400">{checkin.email}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-gray-300">{formatDate(checkin.checkedInAt)}</p>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+            
+            {/* Stats Card */}
+            <div className="bg-gray-800 rounded-lg overflow-hidden mt-6">
+              <div className="p-4 border-b border-gray-700">
+                <h2 className="text-lg font-medium">Today's Stats</h2>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-gray-700 p-3 rounded-lg">
+                    <h3 className="text-sm text-gray-400 mb-1">Checked In</h3>
+                    <p className="text-2xl font-semibold">{recentData?.stats?.checkedInToday || 0}</p>
+                  </div>
+                  
+                  <div className="bg-gray-700 p-3 rounded-lg">
+                    <h3 className="text-sm text-gray-400 mb-1">Total Expected</h3>
+                    <p className="text-2xl font-semibold">{recentData?.stats?.totalExpected || 0}</p>
+                  </div>
+                  
+                  <div className="bg-gray-700 p-3 rounded-lg">
+                    <h3 className="text-sm text-gray-400 mb-1">Your Check-ins</h3>
+                    <p className="text-2xl font-semibold">{scanCount}</p>
+                  </div>
+                  
+                  <div className="bg-gray-700 p-3 rounded-lg">
+                    <h3 className="text-sm text-gray-400 mb-1">Completion</h3>
+                    <p className="text-2xl font-semibold">
+                      {recentData?.stats?.totalExpected
+                        ? Math.round((recentData.stats.checkedInToday / recentData.stats.totalExpected) * 100)
+                        : 0}%
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Results area */}
-        {(error || successMessage || attendeeInfo) && (
-          <div className={`bg-white shadow-sm rounded-lg overflow-hidden border-l-4 ${
-            successMessage ? 'border-green-500' : error ? 'border-red-500' : 'border-gray-300'
-          }`}>
-            <div className="p-6">
-              {error && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-red-800">Error</h3>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </div>
-                </div>
-              )}
-              
-              {successMessage && (
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <svg className="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-green-800">Success</h3>
-                    <p className="text-sm text-green-700 mt-1">{successMessage}</p>
-                  </div>
-                </div>
-              )}
-              
-              {attendeeInfo && (
-                <div className="mt-4 pt-4 border-t">
-                  <h3 className="text-md font-medium text-gray-900 mb-2">Attendee Information</h3>
-                  <div className="bg-gray-50 rounded-md p-4">
-                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">Name</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{attendeeInfo.name}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Email</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{attendeeInfo.email}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-sm font-medium text-gray-500">Role</dt>
-                        <dd className="mt-1 text-sm text-gray-900">{attendeeInfo.role || 'N/A'}</dd>
-                      </div>
-                      <div className="sm:col-span-2">
-                        <dt className="text-sm font-medium text-gray-500">
-                          {isAlreadyCheckedIn ? 'Previously Checked In' : 'Checked In'}
-                        </dt>
-                        <dd className="mt-1 text-sm text-gray-900">
-                          {attendeeInfo.registrationStatus.isCheckedIn ? 
-                            `${new Date(attendeeInfo.registrationStatus.checkedInAt || '').toLocaleString()} at ${
-                              attendeeInfo.registrationStatus.checkedInLocation || 'Unknown Location'
-                            }` : 
-                            'Not checked in'
-                          }
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
-    </DashboardLayout>
+    </div>
   );
+}
+
+// Helper function for formatting dates
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 } 

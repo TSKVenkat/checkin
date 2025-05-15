@@ -1,0 +1,4 @@
+name,email,phone,role,company,title,registrationDate,tags,notes,eventId
+First Last,attendee@example.com,+11234567890,Regular,Acme Inc.,Software Engineer,2023-05-01,"tag1,tag2",Special notes,evt_1
+VIP Name,vip@example.com,+13334445555,VIP,TechCorp,CEO,2023-05-02,"vip,special","VIP attendee, needs special attention",evt_1
+John Doe,john@example.com,+12345678901,Speaker,GlobalSoft,CTO,2023-05-03,"speaker,tech",Session at 2pm on Day 2,evt_2 

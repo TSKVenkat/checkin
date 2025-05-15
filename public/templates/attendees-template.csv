@@ -1,0 +1,351 @@
+name,email,phone,role,company,title,registrationDate,tags,notes,eventId
+First1 Last1,attendee1@example.com,+18974389697,Speaker,DevWorld,Designer,2025-05-14,vip,,evt_12
+First2 Last2,attendee2@example.com,+17953541697,Staff,InnovateCo,Marketing Director,2025-05-06,"product,speaker,engineering",,evt_4
+First3 Last3,attendee3@example.com,+17866993129,Sponsor,Acme Inc.,Sales Manager,2025-04-19,"engineering,vip",,evt_15
+First4 Last4,attendee4@example.com,+16705996326,Regular,DevWorld,Marketing Director,2025-05-01,"speaker,vip",,evt_4
+First5 Last5,attendee5@example.com,+13922224103,Staff,GlobalSoft,Sales Manager,2025-05-05,"tech,product",Notes for First5 Last5: Previous sponsor,evt_8
+First6 Last6,attendee6@example.com,+15869851755,Sponsor,FutureTech,Product Manager,2025-04-15,"vip,engineering,speaker",,evt_2
+First7 Last7,attendee7@example.com,+19749950254,Sponsor,MediaWorks,CEO,2025-05-01,speaker,Notes for First7 Last7: First-time attendee,evt_13
+First8 Last8,attendee8@example.com,+12990052695,Sponsor,GlobalSoft,CEO,2025-05-09,vip,Notes for First8 Last8: Requires accessibility assistance,evt_7
+First9 Last9,attendee9@example.com,+13734571158,VIP,GlobalSoft,Sales Manager,2025-05-08,product,,evt_3
+First10 Last10,attendee10@example.com,+14201195405,VIP,MediaWorks,Sales Manager,2025-05-10,"marketing,sales,vip",,evt_1
+First11 Last11,attendee11@example.com,+17580665363,Speaker,DevWorld,Product Manager,2025-04-20,business,,evt_4
+First12 Last12,attendee12@example.com,+15434161322,Sponsor,FutureTech,Designer,2025-05-04,marketing,Notes for First12 Last12: Special dietary requirements,evt_8
+First13 Last13,attendee13@example.com,+15064707534,Staff,TechCorp,Product Manager,2025-05-08,"marketing,business",Notes for First13 Last13: Requires accessibility assistance,evt_5
+First14 Last14,attendee14@example.com,+11887507666,Staff,GlobalSoft,CEO,2025-05-01,"tech,speaker,design",,evt_13
+First15 Last15,attendee15@example.com,+13380348544,Regular,MediaWorks,Sales Manager,2025-04-23,leadership,Notes for First15 Last15: First-time attendee,evt_11
+First16 Last16,attendee16@example.com,+13991446746,Sponsor,GlobalSoft,Designer,2025-05-08,"tech,vip",,evt_8
+First17 Last17,attendee17@example.com,+12478727715,Staff,TechCorp,CTO,2025-05-05,engineering,,evt_13
+First18 Last18,attendee18@example.com,+13265314198,Staff,GlobalSoft,Marketing Director,2025-05-06,"marketing,engineering",,evt_5
+First19 Last19,attendee19@example.com,+11468126818,Speaker,InnovateCo,Marketing Director,2025-04-17,sales,,evt_14
+First20 Last20,attendee20@example.com,+15748966040,VIP,Acme Inc.,Product Manager,2025-04-27,"sales,marketing,engineering",Notes for First20 Last20: First-time attendee,evt_2
+First21 Last21,attendee21@example.com,+14468542608,Sponsor,DevWorld,Marketing Director,2025-04-19,"marketing,engineering,sales",Notes for First21 Last21: First-time attendee,evt_10
+First22 Last22,attendee22@example.com,+13794355866,Regular,FutureTech,Sales Manager,2025-04-26,"sales,design",,evt_4
+First23 Last23,attendee23@example.com,+13842036814,Regular,InnovateCo,CEO,2025-05-07,"business,product",,evt_12
+First24 Last24,attendee24@example.com,+15297163486,Speaker,GlobalSoft,Designer,2025-05-13,design,Notes for First24 Last24: Previous sponsor,evt_3
+First25 Last25,attendee25@example.com,+13016568037,Staff,InnovateCo,CTO,2025-05-03,"marketing,vip",,evt_13
+First26 Last26,attendee26@example.com,+18932901722,Regular,MediaWorks,Software Engineer,2025-05-02,product,,evt_6
+First27 Last27,attendee27@example.com,+11963491723,Speaker,GlobalSoft,Marketing Director,2025-04-29,"vip,marketing",,evt_14
+First28 Last28,attendee28@example.com,+18693261561,Regular,FutureTech,CTO,2025-04-26,"design,business",,evt_2
+First29 Last29,attendee29@example.com,+13558546090,Sponsor,TechCorp,Product Manager,2025-04-19,"leadership,speaker,engineering",Notes for First29 Last29: First-time attendee,evt_12
+First30 Last30,attendee30@example.com,+11357607445,Regular,FutureTech,Product Manager,2025-04-20,"design,business",,evt_5
+First31 Last31,attendee31@example.com,+13986416983,Sponsor,FutureTech,CTO,2025-05-05,"sales,vip,business",,evt_7
+First32 Last32,attendee32@example.com,+13706861029,Regular,DevWorld,Sales Manager,2025-05-07,speaker,,evt_6
+First33 Last33,attendee33@example.com,+19427657416,Regular,MediaWorks,CEO,2025-04-16,"design,sales,leadership",Notes for First33 Last33: Previous sponsor,evt_9
+First34 Last34,attendee34@example.com,+11479417449,Regular,DevWorld,Product Manager,2025-05-09,"vip,business",,evt_6
+First35 Last35,attendee35@example.com,+19162040222,Regular,FutureTech,Designer,2025-04-19,product,Notes for First35 Last35: First-time attendee,evt_5
+First36 Last36,attendee36@example.com,+16393629708,Sponsor,DevWorld,Marketing Director,2025-05-12,"marketing,tech,design",,evt_5
+First37 Last37,attendee37@example.com,+11845919109,Speaker,FutureTech,Software Engineer,2025-04-26,"design,tech,business",Notes for First37 Last37: Special dietary requirements,evt_8
+First38 Last38,attendee38@example.com,+17555709158,VIP,MediaWorks,Product Manager,2025-05-08,"product,marketing",,evt_4
+First39 Last39,attendee39@example.com,+18308501262,VIP,FutureTech,Product Manager,2025-04-16,design,,evt_13
+First40 Last40,attendee40@example.com,+16682523876,Sponsor,InnovateCo,Sales Manager,2025-05-09,"leadership,marketing",,evt_15
+First41 Last41,attendee41@example.com,+15020899666,Regular,InnovateCo,Product Manager,2025-04-19,tech,,evt_12
+First42 Last42,attendee42@example.com,+16595410976,Regular,FutureTech,CTO,2025-04-24,"business,design,product",,evt_9
+First43 Last43,attendee43@example.com,+15657959199,Speaker,TechCorp,CEO,2025-04-20,leadership,,evt_6
+First44 Last44,attendee44@example.com,+11564290891,Staff,DevWorld,CTO,2025-04-19,"marketing,vip",,evt_13
+First45 Last45,attendee45@example.com,+18652601174,Regular,GlobalSoft,CTO,2025-05-11,marketing,Notes for First45 Last45: Requires accessibility assistance,evt_8
+First46 Last46,attendee46@example.com,+17836620853,Speaker,GlobalSoft,Software Engineer,2025-04-24,"tech,vip",,evt_9
+First47 Last47,attendee47@example.com,+19950865675,Staff,TechCorp,Marketing Director,2025-05-01,vip,Notes for First47 Last47: Previous sponsor,evt_1
+First48 Last48,attendee48@example.com,+13301319850,Speaker,TechCorp,Software Engineer,2025-04-29,vip,,evt_9
+First49 Last49,attendee49@example.com,+15327323332,Speaker,TechCorp,Marketing Director,2025-05-09,"design,tech",,evt_15
+First50 Last50,attendee50@example.com,+11930217962,Regular,TechCorp,CTO,2025-05-06,"engineering,speaker",Notes for First50 Last50: Speaking at session #4,evt_6
+First51 Last51,attendee51@example.com,+14689540474,Speaker,Acme Inc.,CTO,2025-04-28,"marketing,sales",,evt_5
+First52 Last52,attendee52@example.com,+12463311450,Speaker,DevWorld,Marketing Director,2025-05-04,"vip,speaker",Notes for First52 Last52: First-time attendee,evt_3
+First53 Last53,attendee53@example.com,+15314468576,VIP,FutureTech,CEO,2025-04-27,"tech,vip,sales",,evt_3
+First54 Last54,attendee54@example.com,+12796096615,VIP,TechCorp,Marketing Director,2025-04-20,"product,speaker,sales",,evt_2
+First55 Last55,attendee55@example.com,+14041849943,Sponsor,Acme Inc.,Product Manager,2025-04-15,"design,sales,tech",Notes for First55 Last55: Previous sponsor,evt_7
+First56 Last56,attendee56@example.com,+15657049842,Staff,InnovateCo,Sales Manager,2025-04-18,tech,,evt_4
+First57 Last57,attendee57@example.com,+19541935463,Sponsor,InnovateCo,Sales Manager,2025-05-08,"leadership,vip,engineering",,evt_3
+First58 Last58,attendee58@example.com,+15165218494,Speaker,FutureTech,Sales Manager,2025-05-11,business,Notes for First58 Last58: First-time attendee,evt_8
+First59 Last59,attendee59@example.com,+18463337613,VIP,MediaWorks,Product Manager,2025-04-15,business,,evt_11
+First60 Last60,attendee60@example.com,+14983663316,Sponsor,Acme Inc.,CTO,2025-04-18,engineering,,evt_3
+First61 Last61,attendee61@example.com,+18644743156,Sponsor,MediaWorks,Software Engineer,2025-05-04,"leadership,vip,engineering",,evt_3
+First62 Last62,attendee62@example.com,+13120950930,VIP,FutureTech,CTO,2025-05-02,"vip,marketing",,evt_6
+First63 Last63,attendee63@example.com,+12825003383,Regular,InnovateCo,Marketing Director,2025-04-23,sales,Notes for First63 Last63: Special dietary requirements,evt_3
+First64 Last64,attendee64@example.com,+12030866511,Regular,MediaWorks,Software Engineer,2025-05-05,"vip,tech,marketing",,evt_11
+First65 Last65,attendee65@example.com,+17978847442,Regular,DevWorld,CTO,2025-05-03,marketing,,evt_14
+First66 Last66,attendee66@example.com,+14962785485,Staff,GlobalSoft,Marketing Director,2025-04-27,"vip,leadership,sales",,evt_3
+First67 Last67,attendee67@example.com,+18844690665,Speaker,MediaWorks,Software Engineer,2025-05-04,"business,speaker,tech",Notes for First67 Last67: Speaking at session #2,evt_6
+First68 Last68,attendee68@example.com,+12737156068,VIP,GlobalSoft,CEO,2025-04-28,"tech,product",,evt_5
+First69 Last69,attendee69@example.com,+15465246698,Staff,DevWorld,Marketing Director,2025-05-02,"tech,speaker",,evt_10
+First70 Last70,attendee70@example.com,+19828428187,Regular,InnovateCo,Product Manager,2025-04-28,"leadership,vip",Notes for First70 Last70: Previous sponsor,evt_6
+First71 Last71,attendee71@example.com,+16552683446,Speaker,DevWorld,Designer,2025-04-24,"tech,product,engineering",,evt_5
+First72 Last72,attendee72@example.com,+11081040181,Speaker,InnovateCo,Sales Manager,2025-05-05,"vip,leadership,product",Notes for First72 Last72: Speaking at session #2,evt_5
+First73 Last73,attendee73@example.com,+15924729950,VIP,InnovateCo,Sales Manager,2025-05-12,design,,evt_11
+First74 Last74,attendee74@example.com,+12794947373,Staff,TechCorp,Designer,2025-05-12,"tech,design,product",Notes for First74 Last74: Previous sponsor,evt_11
+First75 Last75,attendee75@example.com,+14342674094,VIP,FutureTech,CEO,2025-05-12,engineering,Notes for First75 Last75: Previous sponsor,evt_7
+First76 Last76,attendee76@example.com,+17194477198,Staff,TechCorp,Designer,2025-05-08,marketing,Notes for First76 Last76: Special dietary requirements,evt_10
+First77 Last77,attendee77@example.com,+12706364100,VIP,DevWorld,Designer,2025-04-20,"vip,leadership,business",,evt_14
+First78 Last78,attendee78@example.com,+12694432479,Speaker,MediaWorks,Sales Manager,2025-04-21,product,,evt_12
+First79 Last79,attendee79@example.com,+11090388087,VIP,FutureTech,Software Engineer,2025-04-20,"tech,leadership",Notes for First79 Last79: Requires accessibility assistance,evt_12
+First80 Last80,attendee80@example.com,+18007444045,Sponsor,FutureTech,Software Engineer,2025-05-03,speaker,,evt_6
+First81 Last81,attendee81@example.com,+13620050432,VIP,Acme Inc.,Product Manager,2025-05-12,product,,evt_10
+First82 Last82,attendee82@example.com,+19152257625,Staff,DevWorld,Software Engineer,2025-05-14,"engineering,leadership",Notes for First82 Last82: Special dietary requirements,evt_15
+First83 Last83,attendee83@example.com,+12743207208,Regular,MediaWorks,Product Manager,2025-04-23,"marketing,design",,evt_12
+First84 Last84,attendee84@example.com,+11291215528,Sponsor,Acme Inc.,Software Engineer,2025-04-22,"sales,speaker",,evt_4
+First85 Last85,attendee85@example.com,+13462695079,VIP,GlobalSoft,Designer,2025-04-20,speaker,,evt_12
+First86 Last86,attendee86@example.com,+17112511309,Regular,DevWorld,Product Manager,2025-04-23,"engineering,leadership",,evt_5
+First87 Last87,attendee87@example.com,+11922315973,Regular,InnovateCo,Designer,2025-04-29,sales,,evt_12
+First88 Last88,attendee88@example.com,+13735113752,Speaker,DevWorld,CEO,2025-04-29,design,Notes for First88 Last88: First-time attendee,evt_12
+First89 Last89,attendee89@example.com,+12063978339,Sponsor,TechCorp,CEO,2025-05-12,engineering,,evt_1
+First90 Last90,attendee90@example.com,+11191935155,Sponsor,InnovateCo,CEO,2025-04-27,"sales,business,marketing",,evt_10
+First91 Last91,attendee91@example.com,+15754546062,Regular,DevWorld,Product Manager,2025-04-15,"product,engineering",Notes for First91 Last91: Requires accessibility assistance,evt_14
+First92 Last92,attendee92@example.com,+17252694944,Staff,TechCorp,Marketing Director,2025-05-02,speaker,,evt_10
+First93 Last93,attendee93@example.com,+19557311511,Speaker,InnovateCo,CEO,2025-04-20,"vip,marketing",,evt_9
+First94 Last94,attendee94@example.com,+11983370251,Staff,MediaWorks,CEO,2025-04-17,"sales,engineering",Notes for First94 Last94: Previous sponsor,evt_1
+First95 Last95,attendee95@example.com,+17795191057,Sponsor,FutureTech,Software Engineer,2025-04-24,"product,vip",,evt_12
+First96 Last96,attendee96@example.com,+11801134935,Regular,InnovateCo,Product Manager,2025-04-28,"design,business",Notes for First96 Last96: Previous sponsor,evt_15
+First97 Last97,attendee97@example.com,+12241968108,Speaker,GlobalSoft,Product Manager,2025-05-06,product,,evt_15
+First98 Last98,attendee98@example.com,+12904959892,Staff,FutureTech,Product Manager,2025-04-30,"tech,business,product",,evt_15
+First99 Last99,attendee99@example.com,+18099510321,Speaker,TechCorp,Software Engineer,2025-04-27,"speaker,vip",,evt_12
+First100 Last100,attendee100@example.com,+13098047137,Staff,GlobalSoft,Marketing Director,2025-04-26,speaker,,evt_2
+First101 Last101,attendee101@example.com,+16139814695,Regular,Acme Inc.,Product Manager,2025-05-07,"design,leadership,marketing",,evt_2
+First102 Last102,attendee102@example.com,+17171916960,Regular,InnovateCo,Sales Manager,2025-05-07,design,Notes for First102 Last102: Previous sponsor,evt_9
+First103 Last103,attendee103@example.com,+15073040669,Sponsor,DevWorld,CTO,2025-04-15,"tech,marketing",Notes for First103 Last103: Special dietary requirements,evt_11
+First104 Last104,attendee104@example.com,+19595515676,Regular,InnovateCo,Sales Manager,2025-04-16,"leadership,speaker",,evt_10
+First105 Last105,attendee105@example.com,+12706456589,Sponsor,MediaWorks,Sales Manager,2025-04-20,tech,Notes for First105 Last105: Special dietary requirements,evt_10
+First106 Last106,attendee106@example.com,+14402651358,VIP,TechCorp,Sales Manager,2025-04-23,"sales,engineering",,evt_3
+First107 Last107,attendee107@example.com,+17042823494,VIP,DevWorld,Software Engineer,2025-05-13,"vip,product",,evt_1
+First108 Last108,attendee108@example.com,+11157222201,Sponsor,DevWorld,CEO,2025-04-16,"leadership,design",,evt_11
+First109 Last109,attendee109@example.com,+16352396031,Sponsor,GlobalSoft,Marketing Director,2025-05-03,"design,sales",,evt_9
+First110 Last110,attendee110@example.com,+13825263384,Speaker,MediaWorks,Software Engineer,2025-04-27,"sales,product",,evt_6
+First111 Last111,attendee111@example.com,+17164017556,VIP,InnovateCo,Sales Manager,2025-05-07,"sales,speaker",,evt_2
+First112 Last112,attendee112@example.com,+12994389813,Speaker,MediaWorks,Marketing Director,2025-05-04,marketing,,evt_15
+First113 Last113,attendee113@example.com,+15391564323,Speaker,FutureTech,Marketing Director,2025-05-07,tech,,evt_5
+First114 Last114,attendee114@example.com,+13920042798,Staff,InnovateCo,Software Engineer,2025-05-03,"sales,product,vip",Notes for First114 Last114: Special dietary requirements,evt_8
+First115 Last115,attendee115@example.com,+15856439891,Speaker,DevWorld,CTO,2025-04-20,"tech,design",,evt_4
+First116 Last116,attendee116@example.com,+16727327775,Regular,MediaWorks,Product Manager,2025-05-11,leadership,Notes for First116 Last116: Speaking at session #3,evt_9
+First117 Last117,attendee117@example.com,+16550443920,Staff,GlobalSoft,Designer,2025-05-07,sales,,evt_9
+First118 Last118,attendee118@example.com,+13965663347,Staff,Acme Inc.,Marketing Director,2025-04-25,engineering,,evt_10
+First119 Last119,attendee119@example.com,+14042032400,Staff,TechCorp,Software Engineer,2025-05-04,"engineering,leadership",,evt_4
+First120 Last120,attendee120@example.com,+17891972519,VIP,InnovateCo,Marketing Director,2025-04-29,"leadership,engineering",,evt_2
+First121 Last121,attendee121@example.com,+12007702863,Staff,GlobalSoft,CTO,2025-04-19,"sales,product",,evt_1
+First122 Last122,attendee122@example.com,+11526036982,Speaker,Acme Inc.,Software Engineer,2025-04-15,"speaker,product,design",Notes for First122 Last122: Special dietary requirements,evt_3
+First123 Last123,attendee123@example.com,+18107408378,Speaker,MediaWorks,CEO,2025-04-24,"tech,vip",Notes for First123 Last123: Previous sponsor,evt_4
+First124 Last124,attendee124@example.com,+12510291624,Speaker,MediaWorks,Marketing Director,2025-04-30,tech,,evt_1
+First125 Last125,attendee125@example.com,+19809327577,VIP,TechCorp,Designer,2025-05-07,product,,evt_12
+First126 Last126,attendee126@example.com,+11352461533,Staff,MediaWorks,Designer,2025-04-24,"sales,business,tech",Notes for First126 Last126: Speaking at session #4,evt_6
+First127 Last127,attendee127@example.com,+12979377924,Sponsor,InnovateCo,CTO,2025-05-02,"tech,vip,engineering",,evt_14
+First128 Last128,attendee128@example.com,+12577373492,Speaker,Acme Inc.,CEO,2025-04-26,"speaker,vip,engineering",Notes for First128 Last128: Speaking at session #0,evt_7
+First129 Last129,attendee129@example.com,+12056782658,Staff,DevWorld,Software Engineer,2025-05-02,product,,evt_14
+First130 Last130,attendee130@example.com,+16461671968,Regular,DevWorld,Marketing Director,2025-04-29,"speaker,engineering,leadership",,evt_8
+First131 Last131,attendee131@example.com,+12799367164,Sponsor,DevWorld,CEO,2025-04-23,"tech,business,product",,evt_4
+First132 Last132,attendee132@example.com,+12804808512,Speaker,Acme Inc.,CEO,2025-04-17,"product,tech,vip",,evt_1
+First133 Last133,attendee133@example.com,+11201957114,Regular,GlobalSoft,CEO,2025-05-04,leadership,Notes for First133 Last133: Requires accessibility assistance,evt_15
+First134 Last134,attendee134@example.com,+17716232260,VIP,DevWorld,Sales Manager,2025-05-08,"design,tech",Notes for First134 Last134: Speaking at session #4,evt_7
+First135 Last135,attendee135@example.com,+18069583104,VIP,Acme Inc.,Sales Manager,2025-05-12,"leadership,marketing",,evt_2
+First136 Last136,attendee136@example.com,+12026000861,Regular,Acme Inc.,Marketing Director,2025-05-02,tech,,evt_5
+First137 Last137,attendee137@example.com,+19897390244,Speaker,TechCorp,Software Engineer,2025-05-09,"vip,product",Notes for First137 Last137: Requires accessibility assistance,evt_4
+First138 Last138,attendee138@example.com,+19837885138,Sponsor,GlobalSoft,CTO,2025-05-13,"tech,engineering,product",,evt_4
+First139 Last139,attendee139@example.com,+12287261115,Sponsor,InnovateCo,CTO,2025-04-19,sales,,evt_2
+First140 Last140,attendee140@example.com,+19371293123,Speaker,Acme Inc.,Marketing Director,2025-05-08,sales,Notes for First140 Last140: Previous sponsor,evt_14
+First141 Last141,attendee141@example.com,+16530166260,Sponsor,DevWorld,Software Engineer,2025-05-05,leadership,,evt_2
+First142 Last142,attendee142@example.com,+19088279262,Sponsor,GlobalSoft,CTO,2025-05-09,"vip,sales,business",Notes for First142 Last142: Requires accessibility assistance,evt_13
+First143 Last143,attendee143@example.com,+19312223001,Speaker,InnovateCo,Sales Manager,2025-05-13,marketing,,evt_1
+First144 Last144,attendee144@example.com,+18427070757,VIP,GlobalSoft,Designer,2025-04-26,"engineering,business,sales",,evt_13
+First145 Last145,attendee145@example.com,+15285179540,Staff,TechCorp,Designer,2025-04-20,marketing,Notes for First145 Last145: Previous sponsor,evt_6
+First146 Last146,attendee146@example.com,+11848874766,Speaker,GlobalSoft,CEO,2025-05-12,engineering,,evt_7
+First147 Last147,attendee147@example.com,+15475156349,Regular,MediaWorks,Software Engineer,2025-05-01,sales,,evt_1
+First148 Last148,attendee148@example.com,+16472552779,VIP,TechCorp,CEO,2025-04-22,"speaker,leadership",Notes for First148 Last148: Requires accessibility assistance,evt_5
+First149 Last149,attendee149@example.com,+19227466827,Staff,InnovateCo,Designer,2025-04-17,"speaker,product,leadership",,evt_3
+First150 Last150,attendee150@example.com,+11173788282,VIP,InnovateCo,Marketing Director,2025-05-10,marketing,Notes for First150 Last150: Speaking at session #4,evt_12
+First151 Last151,attendee151@example.com,+15978894392,Sponsor,Acme Inc.,Product Manager,2025-04-15,"leadership,vip,business",Notes for First151 Last151: Previous sponsor,evt_11
+First152 Last152,attendee152@example.com,+18474301274,Staff,MediaWorks,Sales Manager,2025-05-08,business,,evt_12
+First153 Last153,attendee153@example.com,+18117099040,Staff,DevWorld,Software Engineer,2025-04-18,"design,leadership",,evt_4
+First154 Last154,attendee154@example.com,+19906828372,Regular,DevWorld,Designer,2025-04-26,"product,business",,evt_5
+First155 Last155,attendee155@example.com,+17401319667,Sponsor,MediaWorks,Sales Manager,2025-04-19,tech,,evt_2
+First156 Last156,attendee156@example.com,+13169751526,Regular,GlobalSoft,Marketing Director,2025-04-21,"engineering,tech",,evt_3
+First157 Last157,attendee157@example.com,+13606193270,Sponsor,FutureTech,Product Manager,2025-04-18,"product,design",,evt_2
+First158 Last158,attendee158@example.com,+13436755992,Sponsor,InnovateCo,Product Manager,2025-05-13,vip,,evt_10
+First159 Last159,attendee159@example.com,+12248302162,VIP,FutureTech,Product Manager,2025-05-06,product,,evt_14
+First160 Last160,attendee160@example.com,+12301412757,Staff,FutureTech,CTO,2025-04-29,"business,tech",,evt_14
+First161 Last161,attendee161@example.com,+14561339363,Regular,MediaWorks,Product Manager,2025-05-13,"design,speaker",Notes for First161 Last161: First-time attendee,evt_13
+First162 Last162,attendee162@example.com,+12704703232,Staff,MediaWorks,CTO,2025-04-21,design,,evt_2
+First163 Last163,attendee163@example.com,+13299811113,VIP,TechCorp,CEO,2025-05-02,product,Notes for First163 Last163: Previous sponsor,evt_15
+First164 Last164,attendee164@example.com,+15244233713,Sponsor,DevWorld,Designer,2025-05-09,engineering,,evt_13
+First165 Last165,attendee165@example.com,+16463020593,Sponsor,FutureTech,Sales Manager,2025-04-18,leadership,,evt_3
+First166 Last166,attendee166@example.com,+15647941954,Staff,MediaWorks,CTO,2025-04-23,"marketing,product,vip",,evt_13
+First167 Last167,attendee167@example.com,+18867565444,Staff,DevWorld,Product Manager,2025-04-18,"speaker,vip",,evt_6
+First168 Last168,attendee168@example.com,+18049834392,Regular,InnovateCo,Marketing Director,2025-04-20,"vip,design",,evt_11
+First169 Last169,attendee169@example.com,+15752141280,Speaker,InnovateCo,Designer,2025-04-16,leadership,,evt_12
+First170 Last170,attendee170@example.com,+13519977130,Staff,Acme Inc.,Software Engineer,2025-05-10,"marketing,tech",,evt_5
+First171 Last171,attendee171@example.com,+19128817624,VIP,InnovateCo,Designer,2025-05-05,business,Notes for First171 Last171: Special dietary requirements,evt_10
+First172 Last172,attendee172@example.com,+15218119051,Staff,FutureTech,Software Engineer,2025-05-11,"marketing,vip,engineering",,evt_3
+First173 Last173,attendee173@example.com,+11778842040,Sponsor,TechCorp,Product Manager,2025-05-06,speaker,Notes for First173 Last173: Previous sponsor,evt_14
+First174 Last174,attendee174@example.com,+15043461718,Staff,Acme Inc.,Product Manager,2025-04-27,"engineering,marketing",,evt_7
+First175 Last175,attendee175@example.com,+19718379860,VIP,MediaWorks,CEO,2025-05-11,"business,design,tech",,evt_7
+First176 Last176,attendee176@example.com,+19377548175,Sponsor,TechCorp,Designer,2025-04-17,"leadership,business",,evt_11
+First177 Last177,attendee177@example.com,+19701722302,Sponsor,DevWorld,Product Manager,2025-04-16,"product,sales,leadership",,evt_3
+First178 Last178,attendee178@example.com,+16509191582,Speaker,FutureTech,CTO,2025-04-22,speaker,,evt_4
+First179 Last179,attendee179@example.com,+14144031174,Sponsor,FutureTech,Designer,2025-05-13,speaker,,evt_15
+First180 Last180,attendee180@example.com,+18804194416,Speaker,Acme Inc.,Product Manager,2025-05-02,"design,vip,business",,evt_10
+First181 Last181,attendee181@example.com,+11719761042,Sponsor,GlobalSoft,CEO,2025-04-23,"speaker,tech",Notes for First181 Last181: Special dietary requirements,evt_3
+First182 Last182,attendee182@example.com,+15426635512,VIP,MediaWorks,Marketing Director,2025-04-15,"business,tech,vip",Notes for First182 Last182: First-time attendee,evt_5
+First183 Last183,attendee183@example.com,+16890979096,VIP,DevWorld,Software Engineer,2025-05-08,"business,engineering,sales",,evt_1
+First184 Last184,attendee184@example.com,+14581438872,Speaker,MediaWorks,Designer,2025-05-03,"tech,product",,evt_2
+First185 Last185,attendee185@example.com,+13195941795,Speaker,DevWorld,Product Manager,2025-05-04,marketing,Notes for First185 Last185: Previous sponsor,evt_12
+First186 Last186,attendee186@example.com,+11690529565,Sponsor,GlobalSoft,Product Manager,2025-05-06,"business,sales",,evt_13
+First187 Last187,attendee187@example.com,+19928235480,VIP,Acme Inc.,Designer,2025-05-02,"business,marketing",,evt_7
+First188 Last188,attendee188@example.com,+17728648109,Sponsor,Acme Inc.,CTO,2025-05-06,speaker,Notes for First188 Last188: Previous sponsor,evt_15
+First189 Last189,attendee189@example.com,+19517713965,Staff,DevWorld,Designer,2025-04-25,speaker,Notes for First189 Last189: Speaking at session #4,evt_4
+First190 Last190,attendee190@example.com,+14193516203,VIP,GlobalSoft,Product Manager,2025-05-06,engineering,Notes for First190 Last190: First-time attendee,evt_8
+First191 Last191,attendee191@example.com,+16886554322,Sponsor,MediaWorks,Marketing Director,2025-05-08,sales,Notes for First191 Last191: Special dietary requirements,evt_1
+First192 Last192,attendee192@example.com,+12347590117,Sponsor,FutureTech,CEO,2025-05-10,"sales,design",,evt_7
+First193 Last193,attendee193@example.com,+19626917675,Staff,DevWorld,CEO,2025-04-16,"marketing,sales",,evt_4
+First194 Last194,attendee194@example.com,+12652312890,VIP,DevWorld,Software Engineer,2025-04-21,"marketing,business",Notes for First194 Last194: Special dietary requirements,evt_7
+First195 Last195,attendee195@example.com,+15740061980,Sponsor,Acme Inc.,Sales Manager,2025-05-09,"vip,tech",Notes for First195 Last195: Special dietary requirements,evt_12
+First196 Last196,attendee196@example.com,+14796498108,Speaker,TechCorp,Sales Manager,2025-05-05,"design,product,engineering",Notes for First196 Last196: Special dietary requirements,evt_12
+First197 Last197,attendee197@example.com,+19555601237,VIP,FutureTech,CEO,2025-05-14,speaker,,evt_12
+First198 Last198,attendee198@example.com,+19461638360,Regular,TechCorp,Designer,2025-04-26,"design,engineering",,evt_8
+First199 Last199,attendee199@example.com,+19012477215,Speaker,MediaWorks,Product Manager,2025-04-28,leadership,,evt_8
+First200 Last200,attendee200@example.com,+19736478411,Sponsor,FutureTech,CEO,2025-04-25,design,,evt_9
+First201 Last201,attendee201@example.com,+15533674046,Sponsor,TechCorp,Designer,2025-04-27,"tech,sales,marketing",Notes for First201 Last201: Requires accessibility assistance,evt_6
+First202 Last202,attendee202@example.com,+16898969182,Speaker,TechCorp,Product Manager,2025-04-19,"speaker,product,design",,evt_15
+First203 Last203,attendee203@example.com,+16493337064,Staff,GlobalSoft,Product Manager,2025-05-11,business,,evt_10
+First204 Last204,attendee204@example.com,+14384624491,Regular,FutureTech,CEO,2025-05-04,"speaker,marketing,design",,evt_3
+First205 Last205,attendee205@example.com,+19840215733,Speaker,FutureTech,CEO,2025-05-11,product,,evt_13
+First206 Last206,attendee206@example.com,+12527527261,Staff,TechCorp,CEO,2025-04-18,tech,,evt_15
+First207 Last207,attendee207@example.com,+16987005940,Staff,Acme Inc.,CTO,2025-05-08,"tech,sales",,evt_13
+First208 Last208,attendee208@example.com,+17584765462,VIP,MediaWorks,Sales Manager,2025-04-23,"marketing,leadership",,evt_10
+First209 Last209,attendee209@example.com,+12137905742,Sponsor,MediaWorks,Sales Manager,2025-04-21,"design,tech",,evt_5
+First210 Last210,attendee210@example.com,+14185107745,Sponsor,Acme Inc.,Software Engineer,2025-05-10,speaker,,evt_1
+First211 Last211,attendee211@example.com,+11136013285,Regular,Acme Inc.,Sales Manager,2025-04-28,"marketing,design,sales",,evt_11
+First212 Last212,attendee212@example.com,+16995518964,Sponsor,TechCorp,Sales Manager,2025-04-16,"sales,vip,tech",,evt_10
+First213 Last213,attendee213@example.com,+17512277995,VIP,InnovateCo,CEO,2025-05-04,"speaker,tech,engineering",,evt_12
+First214 Last214,attendee214@example.com,+17950214282,Staff,Acme Inc.,Product Manager,2025-05-11,"marketing,speaker",,evt_2
+First215 Last215,attendee215@example.com,+13237120233,VIP,MediaWorks,CEO,2025-05-05,"product,vip",,evt_7
+First216 Last216,attendee216@example.com,+16591353883,Regular,MediaWorks,Product Manager,2025-05-12,"marketing,product,sales",Notes for First216 Last216: Speaking at session #4,evt_15
+First217 Last217,attendee217@example.com,+17972580417,Speaker,Acme Inc.,Marketing Director,2025-04-24,design,,evt_6
+First218 Last218,attendee218@example.com,+19039409687,VIP,DevWorld,Marketing Director,2025-04-22,"product,business",,evt_4
+First219 Last219,attendee219@example.com,+11295415287,VIP,MediaWorks,CTO,2025-05-05,"business,vip",,evt_14
+First220 Last220,attendee220@example.com,+13299795416,VIP,DevWorld,CTO,2025-05-03,"engineering,speaker,leadership",,evt_5
+First221 Last221,attendee221@example.com,+18574204246,Staff,FutureTech,Marketing Director,2025-04-27,"business,tech,marketing",,evt_8
+First222 Last222,attendee222@example.com,+16504728268,Speaker,FutureTech,Marketing Director,2025-05-13,tech,Notes for First222 Last222: Special dietary requirements,evt_9
+First223 Last223,attendee223@example.com,+13291355256,Speaker,MediaWorks,Software Engineer,2025-05-11,"product,engineering",,evt_8
+First224 Last224,attendee224@example.com,+15425491574,Sponsor,GlobalSoft,Sales Manager,2025-05-07,vip,Notes for First224 Last224: Previous sponsor,evt_3
+First225 Last225,attendee225@example.com,+18304912583,Regular,DevWorld,CEO,2025-05-09,speaker,,evt_12
+First226 Last226,attendee226@example.com,+19166949994,Regular,FutureTech,Sales Manager,2025-04-27,"sales,business",,evt_11
+First227 Last227,attendee227@example.com,+15140747384,Sponsor,TechCorp,CTO,2025-05-04,sales,Notes for First227 Last227: Previous sponsor,evt_13
+First228 Last228,attendee228@example.com,+19046522887,Staff,InnovateCo,Sales Manager,2025-04-23,"product,design,marketing",Notes for First228 Last228: Requires accessibility assistance,evt_14
+First229 Last229,attendee229@example.com,+11629260980,VIP,TechCorp,CEO,2025-05-02,"design,product",,evt_12
+First230 Last230,attendee230@example.com,+18740604101,Staff,Acme Inc.,Marketing Director,2025-04-28,"marketing,product",Notes for First230 Last230: Special dietary requirements,evt_10
+First231 Last231,attendee231@example.com,+17459911653,VIP,InnovateCo,CTO,2025-05-08,"marketing,leadership",,evt_12
+First232 Last232,attendee232@example.com,+14965760986,Regular,MediaWorks,CEO,2025-04-30,"business,speaker",Notes for First232 Last232: Previous sponsor,evt_8
+First233 Last233,attendee233@example.com,+19080788171,VIP,FutureTech,Product Manager,2025-04-22,"sales,vip",Notes for First233 Last233: Requires accessibility assistance,evt_6
+First234 Last234,attendee234@example.com,+19001043981,VIP,MediaWorks,CEO,2025-05-08,marketing,,evt_12
+First235 Last235,attendee235@example.com,+17584887955,VIP,DevWorld,Product Manager,2025-05-09,"leadership,marketing",,evt_6
+First236 Last236,attendee236@example.com,+11021674548,Regular,FutureTech,Sales Manager,2025-04-27,"leadership,product,vip",,evt_4
+First237 Last237,attendee237@example.com,+12760796307,Regular,Acme Inc.,Software Engineer,2025-04-23,"sales,tech",Notes for First237 Last237: Previous sponsor,evt_5
+First238 Last238,attendee238@example.com,+15177822605,Sponsor,InnovateCo,Product Manager,2025-05-08,"speaker,business",,evt_10
+First239 Last239,attendee239@example.com,+17258275054,Staff,InnovateCo,CEO,2025-04-16,"marketing,speaker,tech",,evt_10
+First240 Last240,attendee240@example.com,+14079660692,Staff,FutureTech,CEO,2025-04-29,"sales,design,marketing",Notes for First240 Last240: Requires accessibility assistance,evt_9
+First241 Last241,attendee241@example.com,+16696838227,VIP,InnovateCo,CTO,2025-04-28,vip,Notes for First241 Last241: Special dietary requirements,evt_5
+First242 Last242,attendee242@example.com,+17749262940,Regular,TechCorp,Product Manager,2025-05-09,business,,evt_9
+First243 Last243,attendee243@example.com,+16174480106,Sponsor,GlobalSoft,CTO,2025-04-17,sales,,evt_11
+First244 Last244,attendee244@example.com,+18003797452,Regular,DevWorld,Marketing Director,2025-04-15,design,,evt_4
+First245 Last245,attendee245@example.com,+14430293061,Regular,TechCorp,Marketing Director,2025-04-28,design,,evt_10
+First246 Last246,attendee246@example.com,+17886686228,Staff,InnovateCo,Sales Manager,2025-05-10,"tech,design",,evt_4
+First247 Last247,attendee247@example.com,+17860767717,Regular,GlobalSoft,CEO,2025-04-20,"engineering,tech",,evt_4
+First248 Last248,attendee248@example.com,+16357041918,Speaker,GlobalSoft,Product Manager,2025-04-15,marketing,,evt_6
+First249 Last249,attendee249@example.com,+11191736220,Staff,DevWorld,Marketing Director,2025-05-02,"product,engineering,design",,evt_9
+First250 Last250,attendee250@example.com,+11067869203,Sponsor,DevWorld,Designer,2025-05-06,"speaker,sales,vip",,evt_12
+First251 Last251,attendee251@example.com,+11198892661,VIP,GlobalSoft,Marketing Director,2025-04-27,"vip,sales,engineering",,evt_4
+First252 Last252,attendee252@example.com,+14019448638,Regular,InnovateCo,Marketing Director,2025-04-27,speaker,,evt_13
+First253 Last253,attendee253@example.com,+14159729297,Staff,DevWorld,Software Engineer,2025-05-06,"sales,design,product",,evt_11
+First254 Last254,attendee254@example.com,+11719276778,Staff,InnovateCo,CTO,2025-05-06,"speaker,business",,evt_11
+First255 Last255,attendee255@example.com,+13361887558,Sponsor,FutureTech,Software Engineer,2025-05-04,"speaker,marketing",,evt_8
+First256 Last256,attendee256@example.com,+12572868006,Regular,DevWorld,CTO,2025-05-08,sales,Notes for First256 Last256: Special dietary requirements,evt_12
+First257 Last257,attendee257@example.com,+14132358320,Staff,Acme Inc.,Marketing Director,2025-05-11,leadership,Notes for First257 Last257: Requires accessibility assistance,evt_7
+First258 Last258,attendee258@example.com,+16619713522,Regular,TechCorp,CEO,2025-04-30,"product,engineering",Notes for First258 Last258: First-time attendee,evt_9
+First259 Last259,attendee259@example.com,+17794102802,Regular,TechCorp,Product Manager,2025-04-22,"leadership,marketing",Notes for First259 Last259: Special dietary requirements,evt_15
+First260 Last260,attendee260@example.com,+14560526882,Regular,InnovateCo,Software Engineer,2025-04-23,marketing,Notes for First260 Last260: Previous sponsor,evt_11
+First261 Last261,attendee261@example.com,+19107669374,VIP,DevWorld,Marketing Director,2025-04-29,"vip,design,speaker",,evt_14
+First262 Last262,attendee262@example.com,+19915657433,Regular,MediaWorks,CTO,2025-05-01,"sales,vip",,evt_2
+First263 Last263,attendee263@example.com,+14642664153,Staff,TechCorp,Software Engineer,2025-05-08,sales,,evt_6
+First264 Last264,attendee264@example.com,+15383674205,Sponsor,GlobalSoft,Designer,2025-04-30,"engineering,vip,leadership",Notes for First264 Last264: First-time attendee,evt_12
+First265 Last265,attendee265@example.com,+11474946526,Sponsor,InnovateCo,Product Manager,2025-05-09,"marketing,business,leadership",Notes for First265 Last265: Previous sponsor,evt_11
+First266 Last266,attendee266@example.com,+19206882232,VIP,GlobalSoft,Marketing Director,2025-05-06,"tech,leadership,marketing",,evt_2
+First267 Last267,attendee267@example.com,+15511621138,Staff,GlobalSoft,Product Manager,2025-05-07,engineering,,evt_9
+First268 Last268,attendee268@example.com,+15219743939,Regular,GlobalSoft,Software Engineer,2025-05-10,vip,,evt_9
+First269 Last269,attendee269@example.com,+17596599423,VIP,FutureTech,Product Manager,2025-04-24,"vip,tech",Notes for First269 Last269: Special dietary requirements,evt_6
+First270 Last270,attendee270@example.com,+18078649619,Regular,Acme Inc.,Product Manager,2025-05-06,marketing,,evt_5
+First271 Last271,attendee271@example.com,+14630552625,Speaker,GlobalSoft,Sales Manager,2025-04-29,"sales,leadership,product",,evt_5
+First272 Last272,attendee272@example.com,+11520683585,VIP,TechCorp,CTO,2025-05-08,"leadership,product",,evt_10
+First273 Last273,attendee273@example.com,+11832996371,Sponsor,InnovateCo,Product Manager,2025-04-20,marketing,,evt_6
+First274 Last274,attendee274@example.com,+14804049651,Speaker,Acme Inc.,Designer,2025-04-25,"product,vip,sales",,evt_3
+First275 Last275,attendee275@example.com,+11146743145,Sponsor,FutureTech,Product Manager,2025-05-01,"marketing,business",,evt_13
+First276 Last276,attendee276@example.com,+13963397545,Staff,InnovateCo,Designer,2025-05-07,"product,vip,leadership",,evt_2
+First277 Last277,attendee277@example.com,+17975875169,Sponsor,FutureTech,CTO,2025-05-05,"vip,tech,engineering",Notes for First277 Last277: Speaking at session #1,evt_3
+First278 Last278,attendee278@example.com,+15394401386,Regular,InnovateCo,Product Manager,2025-04-15,"design,leadership,engineering",,evt_10
+First279 Last279,attendee279@example.com,+15567509322,Regular,GlobalSoft,Product Manager,2025-05-01,"sales,leadership,product",Notes for First279 Last279: Speaking at session #3,evt_4
+First280 Last280,attendee280@example.com,+14169765762,VIP,InnovateCo,CTO,2025-04-16,"leadership,speaker",Notes for First280 Last280: First-time attendee,evt_9
+First281 Last281,attendee281@example.com,+14927689083,Staff,TechCorp,CEO,2025-04-29,"business,vip,leadership",,evt_3
+First282 Last282,attendee282@example.com,+11045645361,Staff,InnovateCo,Sales Manager,2025-04-15,"vip,speaker",,evt_7
+First283 Last283,attendee283@example.com,+14236431844,VIP,DevWorld,Sales Manager,2025-04-23,"vip,design",Notes for First283 Last283: Special dietary requirements,evt_13
+First284 Last284,attendee284@example.com,+17922605579,Speaker,MediaWorks,Product Manager,2025-04-28,product,,evt_14
+First285 Last285,attendee285@example.com,+14450844029,VIP,MediaWorks,Marketing Director,2025-05-07,"marketing,speaker,business",Notes for First285 Last285: Requires accessibility assistance,evt_3
+First286 Last286,attendee286@example.com,+12322127679,Speaker,TechCorp,Product Manager,2025-05-04,"speaker,leadership",,evt_6
+First287 Last287,attendee287@example.com,+18316554092,Regular,TechCorp,Software Engineer,2025-05-06,"design,vip",Notes for First287 Last287: Previous sponsor,evt_15
+First288 Last288,attendee288@example.com,+16180880504,Speaker,TechCorp,Designer,2025-04-16,speaker,,evt_13
+First289 Last289,attendee289@example.com,+13987750800,Regular,DevWorld,CEO,2025-04-23,"vip,business",Notes for First289 Last289: Speaking at session #1,evt_14
+First290 Last290,attendee290@example.com,+14411535077,Regular,DevWorld,CTO,2025-04-19,business,,evt_11
+First291 Last291,attendee291@example.com,+13316561506,Regular,Acme Inc.,Designer,2025-05-08,"tech,design",,evt_5
+First292 Last292,attendee292@example.com,+13680860430,VIP,Acme Inc.,Software Engineer,2025-05-11,"engineering,leadership",,evt_9
+First293 Last293,attendee293@example.com,+17929187819,Staff,Acme Inc.,Designer,2025-04-22,"design,business",Notes for First293 Last293: First-time attendee,evt_15
+First294 Last294,attendee294@example.com,+15120990980,Speaker,GlobalSoft,Product Manager,2025-04-17,"design,sales,vip",,evt_15
+First295 Last295,attendee295@example.com,+19769788276,Staff,GlobalSoft,Software Engineer,2025-05-01,"tech,design",,evt_8
+First296 Last296,attendee296@example.com,+14023989766,Staff,DevWorld,Designer,2025-05-01,"marketing,speaker,business",Notes for First296 Last296: Speaking at session #1,evt_6
+First297 Last297,attendee297@example.com,+14216951086,Regular,Acme Inc.,CEO,2025-04-17,"speaker,design,marketing",,evt_2
+First298 Last298,attendee298@example.com,+11908552466,Regular,InnovateCo,Marketing Director,2025-04-23,"product,marketing,speaker",,evt_12
+First299 Last299,attendee299@example.com,+11876368014,VIP,Acme Inc.,CEO,2025-04-22,"sales,vip",,evt_11
+First300 Last300,attendee300@example.com,+14880290146,Regular,GlobalSoft,Software Engineer,2025-05-06,"tech,leadership",Notes for First300 Last300: First-time attendee,evt_10
+First97 Last97,attendee97@example.com,+12241968108,Speaker,TechCorp,CTO,2025-05-06,product,,evt_15
+First44 Last44,attendee44@example.com,+1-156-429-0891,Staff,DevWorld,CTO,2025-04-19,"marketing,vip",,evt_13
+First121 Last121,attendee121@example.com,+1-200-770-2863,Staff,GlobalSoft,CTO,2025-04-19,"sales,product",,evt_1
+  First50 Last50  ,attendee50@example.com,+11930217962,Regular,TechCorp,CTO,2025-05-06,"engineering,speaker",Notes for First50 Last50: Speaking at session #4,evt_6
+First160 Last160,attendee160@example.com,+1-230-141-2757,Staff,FutureTech,CTO,2025-04-29,"business,tech",,evt_14
+FIRST243 LAST243,attendee243@example.com,+16174480106,Sponsor,GlobalSoft,CTO,2025-04-17,sales,,evt_11
+FIRST2 LAST2,attendee2@example.com,+17953541697,Staff,InnovateCo,Marketing Director,2025-05-06,"product,speaker,engineering",,evt_4
+First19 Last19,attendee19@example.com,+1-146-812-6818,Speaker,InnovateCo,Marketing Director,2025-04-17,sales,,evt_14
+FIRST155 LAST155,attendee155@example.com,+17401319667,Sponsor,MediaWorks,Sales Manager,2025-04-19,tech,,evt_2
+  First203 Last203  ,attendee203@example.com,+16493337064,Staff,GlobalSoft,Product Manager,2025-05-11,business,,evt_10
+First69 Last69,attendee69@example.com,+15465246698,Staff,TechCorp,CEO,2025-05-02,"tech,speaker",,evt_10
+  First11 Last11  ,attendee11@example.com,+17580665363,Speaker,DevWorld,Product Manager,2025-04-20,business,,evt_4
+First232 Last232,attendee232@example.com,+1-496-576-0986,Regular,MediaWorks,CEO,2025-04-30,"business,speaker",Notes for First232 Last232: Previous sponsor,evt_8
+First201 Last201,attendee201@example.com,+15533674046,Sponsor,GlobalSoft,Marketing Director,2025-04-27,"tech,sales,marketing",Notes for First201 Last201: Requires accessibility assistance,evt_6
+FIRST213 LAST213,attendee213@example.com,+17512277995,VIP,InnovateCo,CEO,2025-05-04,"speaker,tech,engineering",,evt_12
+  First237 Last237  ,attendee237@example.com,+12760796307,Regular,Acme Inc.,Software Engineer,2025-04-23,"sales,tech",Notes for First237 Last237: Previous sponsor,evt_5
+  First242 Last242  ,attendee242@example.com,+17749262940,Regular,TechCorp,Product Manager,2025-05-09,business,,evt_9
+  First119 Last119  ,attendee119@example.com,+14042032400,Staff,TechCorp,Software Engineer,2025-05-04,"engineering,leadership",,evt_4
+First246 Last246,attendee246@example.com,+17886686228,Staff,GlobalSoft,Designer,2025-05-10,"tech,design",,evt_4
+FIRST187 LAST187,attendee187@example.com,+19928235480,VIP,Acme Inc.,Designer,2025-05-02,"business,marketing",,evt_7
+  First184 Last184  ,attendee184@example.com,+14581438872,Speaker,MediaWorks,Designer,2025-05-03,"tech,product",,evt_2
+  First144 Last144  ,attendee144@example.com,+18427070757,VIP,GlobalSoft,Designer,2025-04-26,"engineering,business,sales",,evt_13
+FIRST184 LAST184,attendee184@example.com,+14581438872,Speaker,MediaWorks,Designer,2025-05-03,"tech,product",,evt_2
+FIRST74 LAST74,attendee74@example.com,+12794947373,Staff,TechCorp,Designer,2025-05-12,"tech,design,product",Notes for First74 Last74: Previous sponsor,evt_11
+  First169 Last169  ,attendee169@example.com,+15752141280,Speaker,InnovateCo,Designer,2025-04-16,leadership,,evt_12
+FIRST64 LAST64,attendee64@example.com,+12030866511,Regular,MediaWorks,Software Engineer,2025-05-05,"vip,tech,marketing",,evt_11
+FIRST230 LAST230,attendee230@example.com,+18740604101,Staff,Acme Inc.,Marketing Director,2025-04-28,"marketing,product",Notes for First230 Last230: Special dietary requirements,evt_10
+First174 Last174,attendee174@example.com,+15043461718,Staff,GlobalSoft,Product Manager,2025-04-27,"engineering,marketing",,evt_7
+  First210 Last210  ,attendee210@example.com,+14185107745,Sponsor,Acme Inc.,Software Engineer,2025-05-10,speaker,,evt_1
+First154 Last154,attendee154@example.com,+19906828372,Regular,TechCorp,CTO,2025-04-26,"product,business",,evt_5
+First224 Last224,attendee224@example.com,+1-542-549-1574,Sponsor,GlobalSoft,Sales Manager,2025-05-07,vip,Notes for First224 Last224: Previous sponsor,evt_3
+First236 Last236,attendee236@example.com,+1-102-167-4548,Regular,FutureTech,Sales Manager,2025-04-27,"leadership,product,vip",,evt_4
+FIRST220 LAST220,attendee220@example.com,+13299795416,VIP,DevWorld,CTO,2025-05-03,"engineering,speaker,leadership",,evt_5
+First147 Last147,attendee147@example.com,+1-547-515-6349,Regular,MediaWorks,Software Engineer,2025-05-01,sales,,evt_1
+First74 Last74,attendee74@example.com,+12794947373,Staff,InnovateCo,Marketing Director,2025-05-12,"tech,design,product",Notes for First74 Last74: Previous sponsor,evt_11
+First103 Last103,attendee103@example.com,+15073040669,Sponsor,MediaWorks,Product Manager,2025-04-15,"tech,marketing",Notes for First103 Last103: Special dietary requirements,evt_11
+FIRST237 LAST237,attendee237@example.com,+12760796307,Regular,Acme Inc.,Software Engineer,2025-04-23,"sales,tech",Notes for First237 Last237: Previous sponsor,evt_5
+First111 Last111,attendee111@example.com,+1-716-401-7556,VIP,InnovateCo,Sales Manager,2025-05-07,"sales,speaker",,evt_2
+  First134 Last134  ,attendee134@example.com,+17716232260,VIP,DevWorld,Sales Manager,2025-05-08,"design,tech",Notes for First134 Last134: Speaking at session #4,evt_7
+FIRST227 LAST227,attendee227@example.com,+15140747384,Sponsor,TechCorp,CTO,2025-05-04,sales,Notes for First227 Last227: Previous sponsor,evt_13
+First165 Last165,attendee165@example.com,+16463020593,Sponsor,MediaWorks,Designer,2025-04-18,leadership,,evt_3
+First29 Last29,attendee29@example.com,+1-355-854-6090,Sponsor,TechCorp,Product Manager,2025-04-19,"leadership,speaker,engineering",Notes for First29 Last29: First-time attendee,evt_12
+FIRST115 LAST115,attendee115@example.com,+15856439891,Speaker,DevWorld,CTO,2025-04-20,"tech,design",,evt_4
+FIRST87 LAST87,attendee87@example.com,+11922315973,Regular,InnovateCo,Designer,2025-04-29,sales,,evt_12
+  First158 Last158  ,attendee158@example.com,+13436755992,Sponsor,InnovateCo,Product Manager,2025-05-13,vip,,evt_10
+First150 Last150,attendee150@example.com,+11173788282,VIP,MediaWorks,Product Manager,2025-05-10,marketing,Notes for First150 Last150: Speaking at session #4,evt_12
+FIRST142 LAST142,attendee142@example.com,+19088279262,Sponsor,GlobalSoft,CTO,2025-05-09,"vip,sales,business",Notes for First142 Last142: Requires accessibility assistance,evt_13
+  First177 Last177  ,attendee177@example.com,+19701722302,Sponsor,DevWorld,Product Manager,2025-04-16,"product,sales,leadership",,evt_3
+First106 Last106,attendee106@example.com,+1-440-265-1358,VIP,TechCorp,Sales Manager,2025-04-23,"sales,engineering",,evt_3
+First190 Last190,attendee190@example.com,+14193516203,VIP,DevWorld,Designer,2025-05-06,engineering,Notes for First190 Last190: First-time attendee,evt_8

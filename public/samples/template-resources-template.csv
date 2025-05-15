@@ -1,0 +1,6 @@
+id,name,description,type,eventId,quantity,isLimited,claimableBy
+res_1,Welcome Kit,Conference welcome kit with notebook and swag,kit,evt_1,500,false,All
+res_2,Premium Lunch,Special catered lunch for VIP attendees,lunch,evt_1,50,true,VIP
+res_3,Workshop Materials,Printed guides and digital resources for workshops,materials,evt_2,150,false,All
+res_4,VIP Badge,Special access badge for VIP areas,badge,evt_1,50,true,VIP
+res_5,Conference T-Shirt,Event branded t-shirt,swag,evt_1,300,true,All 

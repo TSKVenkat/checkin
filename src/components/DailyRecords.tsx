@@ -1,147 +1,121 @@
 'use client';
 
-import { useState } from 'react';
+import React from 'react';
 
-interface DailyRecord {
+interface Record {
+  id: string;
   date: string;
-  checkedIn: boolean;
-  checkedInAt?: string;
-  lunchClaimed: boolean;
-  lunchClaimedAt?: string;
-  kitClaimed: boolean;
-  kitClaimedAt?: string;
+  checkInTime?: string;
+  checkOutTime?: string;
+  area?: string;
+  resources?: {
+    lunch?: boolean;
+    kit?: boolean;
+    badge?: boolean;
+    swag?: boolean;
+  };
+  notes?: string;
 }
 
 interface DailyRecordsProps {
-  records: DailyRecord[];
-  selectedDate?: Date;
+  records: Record[];
+  onAddNote: (recordId: string, note: string) => void;
+  className?: string;
 }
 
-export default function DailyRecords({ records, selectedDate }: DailyRecordsProps) {
-  const [expandedDay, setExpandedDay] = useState<string | null>(null);
-
-  // Format date for display
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      month: 'long', 
-      day: 'numeric' 
-    });
+const DailyRecords: React.FC<DailyRecordsProps> = ({
+  records,
+  onAddNote,
+  className = ''
+}) => {
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return 'N/A';
+    const date = new Date(timeString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  // Format time for display
-  const formatTime = (dateString?: string): string => {
-    if (!dateString) return 'N/A';
-    
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: true
-    });
+  const handleNoteChange = (recordId: string, e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onAddNote(recordId, e.target.value);
   };
 
-  // Filter records by selected date if provided
-  const filteredRecords = selectedDate 
-    ? records.filter(record => {
-        const recordDate = new Date(record.date);
-        const selected = new Date(selectedDate);
-        recordDate.setHours(0, 0, 0, 0);
-        selected.setHours(0, 0, 0, 0);
-        return recordDate.getTime() === selected.getTime();
-      })
-    : records;
-
-  // Toggle expanded day
-  const toggleExpand = (date: string) => {
-    setExpandedDay(expandedDay === date ? null : date);
-  };
-
-  // Check if a record is expanded
-  const isExpanded = (date: string): boolean => {
-    return expandedDay === date;
-  };
-
-  // Get status badge class
-  const getStatusBadge = (status: boolean): string => {
-    return status
-      ? 'bg-green-100 text-green-800 border-green-200'
-      : 'bg-gray-100 text-gray-800 border-gray-200';
-  };
+  if (records.length === 0) {
+    return (
+      <div className={`daily-records ${className} text-center py-8`}>
+        <p className="text-gray-500">No records found for the selected date.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="daily-records">
-      <h3 className="text-lg font-medium mb-4">Daily Activity Records</h3>
-      
-      {filteredRecords.length === 0 ? (
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No records for the selected date.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredRecords.map((record, index) => (
-            <div key={index} className="border rounded-lg overflow-hidden">
-              <div 
-                className="flex justify-between items-center p-4 bg-gray-50 cursor-pointer"
-                onClick={() => toggleExpand(record.date)}
-              >
-                <h4 className="font-medium">{formatDate(record.date)}</h4>
-                <div className="flex space-x-2">
-                  <span className={`px-2 py-1 rounded-md text-xs border ${getStatusBadge(record.checkedIn)}`}>
-                    {record.checkedIn ? 'Checked In' : 'Not Checked In'}
-                  </span>
-                  <button className="text-blue-600 hover:text-blue-800">
-                    {isExpanded(record.date) ? 'Hide Details' : 'Show Details'}
-                  </button>
-                </div>
-              </div>
-              
-              {isExpanded(record.date) && (
-                <div className="p-4 bg-white">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="border rounded-md p-3">
-                      <h5 className="font-medium mb-2">Check-in</h5>
-                      <p className={`text-sm ${record.checkedIn ? 'text-green-600' : 'text-gray-500'}`}>
-                        Status: {record.checkedIn ? 'Checked In' : 'Not Checked In'}
-                      </p>
-                      {record.checkedIn && record.checkedInAt && (
-                        <p className="text-sm text-gray-600">
-                          Time: {formatTime(record.checkedInAt)}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="border rounded-md p-3">
-                      <h5 className="font-medium mb-2">Lunch</h5>
-                      <p className={`text-sm ${record.lunchClaimed ? 'text-green-600' : 'text-gray-500'}`}>
-                        Status: {record.lunchClaimed ? 'Claimed' : 'Not Claimed'}
-                      </p>
-                      {record.lunchClaimed && record.lunchClaimedAt && (
-                        <p className="text-sm text-gray-600">
-                          Time: {formatTime(record.lunchClaimedAt)}
-                        </p>
-                      )}
-                    </div>
-                    
-                    <div className="border rounded-md p-3">
-                      <h5 className="font-medium mb-2">Kit</h5>
-                      <p className={`text-sm ${record.kitClaimed ? 'text-green-600' : 'text-gray-500'}`}>
-                        Status: {record.kitClaimed ? 'Claimed' : 'Not Claimed'}
-                      </p>
-                      {record.kitClaimed && record.kitClaimedAt && (
-                        <p className="text-sm text-gray-600">
-                          Time: {formatTime(record.kitClaimedAt)}
-                        </p>
-                      )}
-                    </div>
+    <div className={`daily-records ${className}`}>
+      <h3 className="text-lg font-medium text-gray-900 mb-4">Daily Activity Records</h3>
+      <div className="overflow-hidden shadow-md rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-In</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-Out</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Resources</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {records.map((record) => (
+              <tr key={record.id}>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(record.date).toLocaleDateString()}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatTime(record.checkInTime)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {formatTime(record.checkOutTime)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {record.area || 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <div className="flex space-x-2">
+                    {record.resources?.lunch && (
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                        Lunch
+                      </span>
+                    )}
+                    {record.resources?.kit && (
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Kit
+                      </span>
+                    )}
+                    {record.resources?.badge && (
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                        Badge
+                      </span>
+                    )}
+                    {record.resources?.swag && (
+                      <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        Swag
+                      </span>
+                    )}
                   </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  <textarea
+                    rows={2}
+                    className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                    placeholder="Add notes..."
+                    value={record.notes || ''}
+                    onChange={(e) => handleNoteChange(record.id, e)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
-} 
+};
+
+export default DailyRecords; 

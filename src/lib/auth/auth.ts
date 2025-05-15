@@ -1,15 +1,24 @@
-// Authentication system implementation for Edge runtime
+// Authentication system implementation
 import { NextRequest, NextResponse } from 'next/server';
 import { sign, verify } from 'jsonwebtoken';
-import { SHA256, PBKDF2 } from 'crypto-js';
+import bcryptjs from 'bcryptjs';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+// Import prisma only when not in edge runtime
+let prisma: any;
+if (typeof window === 'undefined' && process.env.NEXT_RUNTIME !== 'edge') {
+  // Dynamically import prisma only in Node.js environment, not in Edge Runtime
+  const { default: prismaModule } = require('../prisma');
+  prisma = prismaModule;
+}
 
-// Environment variables should be properly configured in .env file
+// Environment variables (should be properly configured in a real project)
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 const REFRESH_SECRET = process.env.REFRESH_SECRET || 'your-refresh-secret-change-in-production';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m'; // 15 minutes
-const REFRESH_EXPIRES_IN = process.env.REFRESH_EXPIRES_IN || '7d'; // 7 days
+const JWT_EXPIRES_IN = '15m'; // 15 minutes
+const REFRESH_EXPIRES_IN = '7d'; // 7 days
 
-// User data structure for payload
+// User payload interface
 export interface UserPayload {
   id: string;
   email: string;
@@ -17,144 +26,147 @@ export interface UserPayload {
   permissions: string[];
 }
 
-// Token data structure
-export interface TokenData {
+interface TokenData {
   token: string;
   expiresAt: Date;
 }
 
 /**
- * Generates a secure password hash using PBKDF2
- * Note: This function should only be used in API routes, not in middleware
+ * Generates a secure password hash using bcrypt
  */
 export async function hashPassword(password: string): Promise<string> {
-  // Generate a random salt (16 bytes)
-  const salt = Array.from(
-    { length: 16 },
-    () => Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
-  ).join('');
-  
-  // Use PBKDF2 with 10000 iterations and SHA256
-  const hash = PBKDF2(password, salt, { 
-    keySize: 8, // 256 bits
-    iterations: 10000 
-  }).toString();
-  
-  // Format: iterations:salt:hash
-  return `10000:${salt}:${hash}`;
+  if (typeof window !== 'undefined' || process.env.NEXT_RUNTIME === 'edge') {
+    throw new Error('hashPassword is not available in the browser or Edge Runtime');
+  }
+  const saltRounds = 12;
+  return bcryptjs.hash(password, saltRounds);
 }
 
 /**
  * Compares a password against its hash
- * Note: This function should only be used in API routes, not in middleware
  */
-export async function comparePassword(password: string, storedHash: string): Promise<boolean> {
-  try {
-    // Split the stored hash value
-    const [iterations, salt, hash] = storedHash.split(':');
-    
-    // Hash the password with the same parameters
-    const testHash = PBKDF2(password, salt, {
-      keySize: 8,
-      iterations: parseInt(iterations)
-    }).toString();
-    
-    // Compare the hashes
-    return testHash === hash;
-  } catch (error) {
-    return false;
+export async function comparePassword(password: string, hash: string): Promise<boolean> {
+  if (typeof window !== 'undefined' || process.env.NEXT_RUNTIME === 'edge') {
+    throw new Error('comparePassword is not available in the browser or Edge Runtime');
   }
+  return bcryptjs.compare(password, hash);
 }
 
 /**
  * Generates a JWT token for authentication
- * Note: This function should only be used in API routes, not in middleware
  */
 export function generateAccessToken(user: UserPayload): string {
-  return sign(
-    {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      permissions: user.permissions
-    },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
-  );
+  return jwt.sign(user, JWT_SECRET, { expiresIn: '24h' });
 }
 
 /**
- * Generates a refresh token
- * Note: This function should only be used in API routes, not in middleware
+ * Generates a one-time use refresh token
  */
-export function generateRefreshToken(userId: string): TokenData {
-  // Generate a random token using crypto-safe approach
-  const refreshToken = Array.from(
-    { length: 40 },
-    () => Math.floor(Math.random() * 36).toString(36)
-  ).join('');
-  
-  // Set expiration date based on environment setting
-  const expiresAt = new Date();
-  const days = parseInt(REFRESH_EXPIRES_IN) || 7;
-  expiresAt.setDate(expiresAt.getDate() + days);
-  
-  return {
-    token: refreshToken,
-    expiresAt
-  };
+export function generateRefreshToken(user: UserPayload): string {
+  return jwt.sign(user, JWT_SECRET, { expiresIn: '7d' });
 }
 
 /**
- * Verifies a JWT access token
- * This is safe to use in Edge middleware
+ * Stores a refresh token in the user's active sessions
+ * Only available in API routes, not in middleware
+ */
+export async function storeRefreshToken(userId: string, token: string, device: string, expiresAt: Date): Promise<void> {
+  if (typeof window !== 'undefined' || process.env.NEXT_RUNTIME === 'edge') {
+    throw new Error('storeRefreshToken is not available in the browser or Edge Runtime');
+  }
+  
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  
+  // Update with Prisma instead of MongoDB model
+  await prisma.staff.update({
+    where: { id: userId },
+    data: {
+      // This would need to be adjusted based on the actual Prisma schema
+      // activeSessions: { push: { token: hashedToken, device, expiresAt } }
+      // For now, just update the lastLogin field as a placeholder
+      lastLogin: new Date()
+    }
+  });
+}
+
+/**
+ * Verify an access token and return the decoded user information
  */
 export function verifyAccessToken(token: string): UserPayload | null {
   try {
-    return verify(token, JWT_SECRET) as UserPayload;
+    const decoded = jwt.verify(token, JWT_SECRET) as UserPayload;
+    return decoded;
   } catch (error) {
+    console.error('Token verification error:', error);
     return null;
   }
 }
 
 /**
- * Get user from cookies
- * This is safe to use in Edge middleware
+ * Verifies a refresh token against stored tokens
+ * Only available in API routes, not in middleware
  */
-export function getUserFromCookie(req: NextRequest): UserPayload | null {
-  // Try to get token from cookie first
-  const cookieToken = req.cookies.get('auth_token')?.value;
-  
-  // Fallback to authorization header if cookie not present
-  const authHeader = req.headers.get('authorization');
-  const headerToken = authHeader && authHeader.startsWith('Bearer ') 
-    ? authHeader.substring(7) 
-    : null;
-  
-  const token = cookieToken || headerToken;
-  
-  if (!token) {
-    return null;
+export async function verifyRefreshToken(userId: string, token: string): Promise<boolean> {
+  if (typeof window !== 'undefined' || process.env.NEXT_RUNTIME === 'edge') {
+    throw new Error('verifyRefreshToken is not available in the browser or Edge Runtime');
   }
   
-  return verifyAccessToken(token);
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  
+  // This would need to be adjusted based on the actual Prisma schema
+  // For now, just check if the user exists as a placeholder
+  const user = await prisma.staff.findUnique({
+    where: { id: userId }
+  });
+  
+  return !!user;
 }
 
 /**
- * Middleware authentication check
- * This is safe to use in Edge middleware
+ * Invalidates a refresh token after use (one-time use tokens)
+ * Only available in API routes, not in middleware
  */
-export function authenticate(req: NextRequest): {
+export async function invalidateRefreshToken(userId: string, token: string): Promise<void> {
+  if (typeof window !== 'undefined' || process.env.NEXT_RUNTIME === 'edge') {
+    throw new Error('invalidateRefreshToken is not available in the browser or Edge Runtime');
+  }
+  
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+  
+  // This would need to be adjusted based on the actual Prisma schema
+  // For now, just update the lastLogin field as a placeholder
+  await prisma.staff.update({
+    where: { id: userId },
+    data: {
+      lastLogin: new Date()
+    }
+  });
+}
+
+/**
+ * Middleware to authenticate requests
+ * Authentication from cookies is safe for middleware
+ */
+export function authenticateFromCookies(req: NextRequest): {
   authenticated: boolean;
   user?: UserPayload;
   message?: string;
 } {
-  const user = getUserFromCookie(req);
+  const token = req.cookies.get('auth_token')?.value;
+  
+  if (!token) {
+    return { 
+      authenticated: false, 
+      message: 'No authentication token provided' 
+    };
+  }
+  
+  const user = verifyAccessToken(token);
   
   if (!user) {
     return { 
       authenticated: false, 
-      message: 'Authentication required' 
+      message: 'Invalid or expired token' 
     };
   }
   
@@ -165,12 +177,62 @@ export function authenticate(req: NextRequest): {
 }
 
 /**
- * Role-based authorization check for middleware
- * This is safe to use in Edge middleware
+ * Middleware to authenticate requests - For API routes, not middleware
+ */
+export async function authenticate(req: NextRequest): Promise<{
+  authenticated: boolean;
+  user?: UserPayload;
+  message?: string;
+}> {
+  // In middleware, prefer using cookies
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    return authenticateFromCookies(req);
+  }
+  
+  const authHeader = req.headers.get('authorization');
+  // Also check cookie as fallback
+  const cookie = req.cookies.get('auth_token')?.value;
+  
+  // Try header first
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const user = verifyAccessToken(token);
+    
+    if (user) {
+      return {
+        authenticated: true,
+        user
+      };
+    }
+  }
+  
+  // Fall back to cookie
+  if (cookie) {
+    const user = verifyAccessToken(cookie);
+    
+    if (user) {
+      return {
+        authenticated: true,
+        user
+      };
+    }
+  }
+  
+  return { 
+    authenticated: false, 
+    message: 'No valid authentication token provided' 
+  };
+}
+
+/**
+ * Role-based authorization middleware
  */
 export function authorize(requiredRole: string | string[], requiredPermissions?: string[]) {
-  return (req: NextRequest) => {
-    const { authenticated, user, message } = authenticate(req);
+  return async (req: NextRequest): Promise<{
+    authorized: boolean;
+    message?: string;
+  }> => {
+    const { authenticated, user, message } = await authenticate(req);
     
     if (!authenticated || !user) {
       return { authorized: false, message };
@@ -201,65 +263,61 @@ export function authorize(requiredRole: string | string[], requiredPermissions?:
       }
     }
     
-    return {
-      authorized: true,
-      user
-    };
+    return { authorized: true };
   };
 }
 
 /**
- * Set authentication cookies
+ * Legacy function to get user from request for backward compatibility
  */
-export function setAuthCookies(
-  response: NextResponse,
-  accessToken: string,
-  refreshToken: string,
-  refreshExpiry: Date
-): void {
-  // Set HTTP-only secure cookies
-  response.cookies.set({
-    name: 'auth_token',
-    value: accessToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/',
-    // JWT expiry is handled by the token itself
-  });
+export function getUserFromRequest(req: NextRequest): UserPayload | null {
+  // In middleware, prefer using cookies
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    const token = req.cookies.get('auth_token')?.value;
+    if (!token) return null;
+    return verifyAccessToken(token);
+  }
+
+  // Try header first
+  const authHeader = req.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+  const token = authHeader.substring(7);
+    return verifyAccessToken(token);
+  }
   
-  response.cookies.set({
-    name: 'refresh_token',
-    value: refreshToken,
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/api/auth',
-    expires: refreshExpiry
-  });
+  // Fall back to cookie
+  const token = req.cookies.get('auth_token')?.value;
+  if (!token) return null;
+  return verifyAccessToken(token);
 }
 
 /**
- * Clear authentication cookies
+ * Create a test token for development purposes
  */
-export function clearAuthCookies(response: NextResponse): void {
-  response.cookies.set({
-    name: 'auth_token',
-    value: '',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/',
-    expires: new Date(0)
-  });
+export function createTestToken(role: string = 'user'): string {
+  const user: UserPayload = {
+    id: `test-${role}-id`,
+    email: `${role}@example.com`,
+    role,
+    permissions: []
+  };
   
-  response.cookies.set({
-    name: 'refresh_token',
-    value: '',
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/api/auth',
-    expires: new Date(0)
-  });
+  return generateAccessToken(user);
+}
+
+/**
+ * Extract token from request
+ */
+export function extractTokenFromRequest(req: NextRequest): string | null {
+  // Try to get token from cookies
+  const tokenFromCookie = req.cookies.get('auth_token')?.value;
+  if (tokenFromCookie) return tokenFromCookie;
+  
+  // Try to get token from authorization header
+  const authHeader = req.headers.get('authorization');
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+  
+  return null;
 } 

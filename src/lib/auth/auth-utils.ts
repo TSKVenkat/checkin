@@ -1,6 +1,7 @@
 // Authentication utilities for API routes
 import { NextRequest } from 'next/server';
 import { verifyAccessToken } from './auth';
+import { SessionStatus } from './types';
 
 // User payload interface
 export interface UserPayload {
@@ -16,6 +17,7 @@ export interface AuthResult {
   message?: string;
   user?: UserPayload;
   status?: number;
+  authStatus: SessionStatus;
 }
 
 /**
@@ -33,7 +35,8 @@ export async function verifyAuth(req: NextRequest): Promise<AuthResult> {
       return { 
         success: false, 
         message: 'Authentication required',
-        status: 401
+        status: 401,
+        authStatus: 'unauthenticated'
       };
     }
     
@@ -45,7 +48,8 @@ export async function verifyAuth(req: NextRequest): Promise<AuthResult> {
       return { 
         success: false, 
         message: 'Invalid or expired token',
-        status: 401
+        status: 401,
+        authStatus: 'unauthenticated'
       };
     }
     
@@ -56,14 +60,16 @@ export async function verifyAuth(req: NextRequest): Promise<AuthResult> {
     return {
       success: true,
       user,
-      status: 200
+      status: 200,
+      authStatus: 'authenticated'
     };
   } catch (error) {
     console.error('[AUTH] Authentication error:', error);
     return {
       success: false,
       message: `Authentication error: ${(error as Error).message}`,
-      status: 500
+      status: 500,
+      authStatus: 'unauthenticated'
     };
   }
 }
@@ -154,7 +160,8 @@ export function createTestAuth(role: string = 'admin'): AuthResult {
     return {
       success: false,
       message: 'Test authentication not available in production',
-      status: 403
+      status: 403,
+      authStatus: 'unauthenticated'
     };
   }
   
@@ -170,6 +177,7 @@ export function createTestAuth(role: string = 'admin'): AuthResult {
   return {
     success: true,
     user: testUser,
-    status: 200
+    status: 200,
+    authStatus: 'authenticated'
   };
 } 

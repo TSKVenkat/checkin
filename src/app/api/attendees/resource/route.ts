@@ -11,11 +11,11 @@ const ALLOWED_ROLES = ['admin', 'manager', 'staff'];
 export async function POST(req: NextRequest) {
   try {
     // Authorize the request
-    const authResult = await authorize(ALLOWED_ROLES)(req);
+    const authResult = await authorize(['admin', 'manager', 'staff'])(req);
     
     if (!authResult.success || !authResult.authorized) {
       return NextResponse.json(
-        { success: false, message: authResult.message || 'Unauthorized' },
+        { success: false, message: authResult.message || 'Unauthorized access to resource claim' },
         { status: 403 }
       );
     }

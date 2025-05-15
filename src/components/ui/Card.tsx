@@ -34,6 +34,8 @@ export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof cardVariants> {
   spotlight?: boolean;
+  title?: string;
+  description?: string;
 }
 
 // Main Card component

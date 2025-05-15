@@ -53,7 +53,7 @@ export async function GET(req: NextRequest) {
     }
     
     // Check if user has admin or manager role
-    if (!['admin', 'manager'].includes(authResult.user.role)) {
+    if (!['admin', 'manager'].includes(authResult.user?.role || '')) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Check if user has admin or manager role
-    if (!['admin', 'manager'].includes(authResult.user.role)) {
+    if (!['admin', 'manager'].includes(authResult.user?.role || '')) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }

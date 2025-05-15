@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     // Record the safety confirmation
     const attendee = await prisma.attendee.findUnique({
-      where: { userId: user.id }
+      where: { email: user.email }
     });
 
     if (!attendee) {

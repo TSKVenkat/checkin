@@ -195,29 +195,29 @@ export default function AttendeeProfilePage() {
               <h2 className="text-xl font-semibold text-white mb-4">My Events</h2>
               
               <div className="space-y-4">
-                {attendee.events.map((event) => (
-                  <div key={event.id} className="border border-gray-700 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-white">{event.name}</h3>
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      <div className="text-sm text-gray-300">
-                        <span className="font-medium">Start:</span> {new Date(event.startDate).toLocaleDateString()}
-                      </div>
-                      <div className="text-sm text-gray-300">
-                        <span className="font-medium">End:</span> {new Date(event.endDate).toLocaleDateString()}
+                {attendee.events.map((event: {
+                  id: string;
+                  name: string;
+                  startDate: string;
+                  endDate: string;
+                  locations: { id: string; name: string }[];
+                }) => (
+                  <div key={event.id} className="mb-4 p-4 bg-gray-800 rounded-md">
+                    <h3 className="font-semibold text-lg">{event.name}</h3>
+                    <p className="text-gray-400 text-sm">
+                      {new Date(event.startDate).toLocaleDateString()} - {new Date(event.endDate).toLocaleDateString()}
+                    </p>
+                    
+                    <div className="mt-2">
+                      <h4 className="text-sm font-medium text-gray-300 mb-1">Locations:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {event.locations.map((loc: { id: string; name: string }) => (
+                          <span key={loc.id} className="px-2 py-1 bg-gray-700 rounded text-xs">
+                            {loc.name}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                    {event.locations && event.locations.length > 0 && (
-                      <div className="mt-2">
-                        <span className="text-sm font-medium text-gray-300">Locations:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {event.locations.map((loc) => (
-                            <span key={loc.name} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-700 text-gray-300">
-                              {loc.name} ({loc.type})
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>

@@ -8,6 +8,7 @@ import { useActivityLogs } from '@/lib/query/admin-hooks';
 import { useAuthSession } from '@/lib/query/auth-hooks';
 import Button from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Loading';
+import { SessionStatus } from '@/lib/auth/types';
 
 interface Staff {
   id: string;
@@ -74,7 +75,7 @@ export default function ActivityTrackingPage() {
     page,
     limit
   }, {
-    enabled: status === 'authenticated' && ['admin', 'manager'].includes(user?.role || '')
+    enabled: status === 'authenticated' && !!user && ['admin', 'manager'].includes(user.role)
   });
       
   // Extract activities, pagination and staff list from response
@@ -370,25 +371,50 @@ export default function ActivityTrackingPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChange(page - 1)}
                 disabled={page === 1}
-                >
-                  Previous
+                onClick={() => handlePageChange(page - 1)}
+              >
+                Previous
               </Button>
-              <div className="px-4 py-1 text-white bg-dark-bg-tertiary rounded-md">
-                {page} / {pagination.totalPages}
-              </div>
+              
+              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                // Show pagination context around current page
+                let pageNum = page;
+                if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= pagination.totalPages - 2) {
+                  pageNum = pagination.totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                
+                // Ensure page number is within valid range
+                if (pageNum <= 0) pageNum = 1;
+                if (pageNum > pagination.totalPages) return null;
+                
+                return (
+                  <Button
+                    key={i}
+                    variant={pageNum === page ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+              
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => handlePageChange(page + 1)}
                 disabled={page === pagination.totalPages}
+                onClick={() => handlePageChange(page + 1)}
               >
                 Next
               </Button>
             </div>
-        </div>
-      )}
+          </div>
+        )}
       </Card>
     </div>
   );

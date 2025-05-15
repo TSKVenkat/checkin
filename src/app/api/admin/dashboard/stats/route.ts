@@ -5,6 +5,18 @@ import { verifyAuth } from '@/lib/auth/auth-utils';
 // Cache duration in seconds - 1 minute
 const CACHE_DURATION = 60;
 
+// Define interfaces for better type safety
+interface ResourceDistribution {
+  [key: string]: {
+    total: number;
+    distributed: number;
+  };
+}
+
+interface StaffCounts {
+  [role: string]: number;
+}
+
 export async function GET(req: NextRequest): Promise<NextResponse> {
   // Check if user is authorized to access admin dashboard stats
   const authResult = await verifyAuth(req);
@@ -17,7 +29,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
   
   // Check if user has admin role
-  if (authResult.user.role !== 'admin') {
+  if (authResult.user?.role !== 'admin') {
     return NextResponse.json(
       { success: false, message: 'Admin access required' },
       { status: 403 }
@@ -81,7 +93,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }));
     
     // Get resource distribution by type
-    const resourceDistribution = {};
+    const resourceDistribution: ResourceDistribution = {};
     resources.forEach(resource => {
       const type = resource.type;
       if (!resourceDistribution[type]) {
@@ -106,7 +118,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     });
     
     // Format staff counts
-    const staffCounts = {};
+    const staffCounts: StaffCounts = {};
     staffByRole.forEach(item => {
       staffCounts[item.role] = item._count.id;
     });

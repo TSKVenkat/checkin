@@ -138,9 +138,16 @@ export default function Button({
 }
 
 // Link button component
-interface LinkButtonProps extends Omit<ButtonProps, 'onClick'> {
+interface LinkButtonProps extends 
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'>, 
+  VariantProps<typeof buttonVariants> {
   href: string;
   external?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  loading?: boolean;
+  spotlight?: boolean;
+  disabled?: boolean;
 }
 
 export function LinkButton({ 

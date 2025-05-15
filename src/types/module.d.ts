@@ -66,3 +66,19 @@ declare module 'qrcode' {
   function toDataURL(data: string): Promise<string>;
   export { toDataURL };
 } 
+
+// Add declaration for Prisma SQL template literal tag
+import { PrismaClient } from '@prisma/client';
+
+declare global {
+  namespace PrismaJson {
+    type PrismaValue = string | number | boolean | object | null;
+  }
+
+  // Extend PrismaClient with sql template literal type
+  interface PrismaNamespace {
+    sql: (template: TemplateStringsArray, ...values: any[]) => any;
+  }
+
+  const Prisma: PrismaNamespace;
+} 

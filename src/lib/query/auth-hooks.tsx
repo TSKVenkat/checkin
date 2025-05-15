@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { SessionStatus, AuthSession } from '../auth/types';
 
 // Auth-related query keys
 export const AuthKeys = {
@@ -239,7 +240,7 @@ export function useLogout() {
 }
 
 // Hook to check current auth session status
-export function useAuthSession(options: { onUnauthenticated?: () => void; refetchOnMount?: boolean } = {}) {
+export function useAuthSession(options: { onUnauthenticated?: () => void; refetchOnMount?: boolean } = {}): AuthSession {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { onUnauthenticated } = options;
@@ -252,7 +253,7 @@ export function useAuthSession(options: { onUnauthenticated?: () => void; refetc
         // Check if we have a token and if it's expired
         const token = tokenStorage.getToken();
         if (!token) {
-          return { isAuthenticated: false };
+          return { isAuthenticated: false, status: 'unauthenticated' as SessionStatus };
         }
         
         if (isTokenExpired(token)) {
@@ -260,7 +261,7 @@ export function useAuthSession(options: { onUnauthenticated?: () => void; refetc
           const refreshToken = tokenStorage.getRefreshToken();
           if (!refreshToken) {
             tokenStorage.clearAll(); // Clean up any stale data
-            return { isAuthenticated: false };
+            return { isAuthenticated: false, status: 'unauthenticated' as SessionStatus };
           }
           
           try {
@@ -275,23 +276,23 @@ export function useAuthSession(options: { onUnauthenticated?: () => void; refetc
                 tokenStorage.setRefreshToken(data.refreshToken);
               }
               
-              return { isAuthenticated: true };
+              return { isAuthenticated: true, status: 'authenticated' as SessionStatus };
             } else {
               tokenStorage.clearAll();
-              return { isAuthenticated: false };
+              return { isAuthenticated: false, status: 'unauthenticated' as SessionStatus };
             }
           } catch (refreshError) {
             console.error('Token refresh failed:', refreshError);
             tokenStorage.clearAll();
-            return { isAuthenticated: false };
+            return { isAuthenticated: false, status: 'unauthenticated' as SessionStatus };
           }
         }
         
         // Token is valid
-        return { isAuthenticated: true };
+        return { isAuthenticated: true, status: 'authenticated' as SessionStatus };
       } catch (error) {
         console.error('Auth session check failed:', error);
-        return { isAuthenticated: false };
+        return { isAuthenticated: false, status: 'unauthenticated' as SessionStatus };
       }
     },
     // Only make this request on mount or when manually invalidated
@@ -343,7 +344,12 @@ export function useAuthSession(options: { onUnauthenticated?: () => void; refetc
   return {
     ...query,
     user: userQuery.data || null,
-    status: query.status,
+    status: query.data?.status || 'loading',
+    error: query.error as Error | null,
+    isError: query.isError,
+    isPending: query.isPending,
+    isLoading: query.isLoading,
+    data: query.data || { isAuthenticated: false }
   };
 }
 

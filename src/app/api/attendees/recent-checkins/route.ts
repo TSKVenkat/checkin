@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
       whereClause.eventId = eventIdParam;
     }
     
-    // Get recent check-ins
+    // Fetch recent check-ins
     const recentCheckins = await prisma.attendee.findMany({
       where: whereClause,
       orderBy: {
@@ -59,141 +59,126 @@ export async function GET(req: NextRequest) {
         id: true,
         name: true,
         email: true,
+        uniqueId: true,
         checkedInAt: true,
         checkedInLocation: true,
-        checkedInById: true,
-        checkedInBy: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true
-          }
-        },
-        eventId: true,
         event: {
           select: {
-            id: true,
             name: true
           }
         }
       }
     });
+
+    // Get hourly check-in stats for today
+    // For hourly stats, we'll do a direct SQL query for more efficiency
+    // Define the query window (hours we want to show)
+    const hours = Array.from({ length: 24 }, (_, i) => i);
     
-    // Get stats for the day
-    const checkedInToday = await prisma.attendee.count({
-      where: whereClause
+    // Initialize results array with all hours
+    const hourlyStats = hours.map(hour => {
+      const hourStart = new Date(day);
+      hourStart.setHours(hour, 0, 0, 0);
+      
+      const hourEnd = new Date(day);
+      hourEnd.setHours(hour, 59, 59, 999);
+      
+      return {
+        hour,
+        count: 0,
+        time: `${hour.toString().padStart(2, '0')}:00`
+      };
     });
     
-    // Get total expected attendees (based on event if specified)
-    const totalExpectedWhereClause: any = {};
-    if (eventIdParam) {
-      totalExpectedWhereClause.eventId = eventIdParam;
-    }
-    
-    const totalExpected = await prisma.attendee.count({
-      where: totalExpectedWhereClause
-    });
-    
-    // Get check-in distribution by hour for the day
-    // Build the SQL query with proper condition handling
-    let hourlySQL = Prisma.sql`
+    // Create base SQL query
+    let hourlyQuery = `
       SELECT 
         EXTRACT(HOUR FROM "checkedInAt") as hour,
         COUNT(*) as count
-      FROM 
-        "Attendee"
+      FROM "Attendee"
       WHERE 
-        "isCheckedIn" = true
-        AND "checkedInAt" >= ${startOfDay}
-        AND "checkedInAt" <= ${endOfDay}
+        "isCheckedIn" = true AND
+        "checkedInAt" >= '${startOfDay.toISOString()}' AND
+        "checkedInAt" <= '${endOfDay.toISOString()}'
     `;
     
-    // Add eventId condition if needed
     if (eventIdParam) {
-      hourlySQL = Prisma.sql`${hourlySQL} AND "eventId" = ${eventIdParam}`;
+      hourlyQuery += ` AND "eventId" = '${eventIdParam}'`;
     }
     
-    // Complete the query with GROUP BY and ORDER BY
-    hourlySQL = Prisma.sql`
-      ${hourlySQL}
-      GROUP BY 
-        EXTRACT(HOUR FROM "checkedInAt")
-      ORDER BY 
-        hour ASC
+    hourlyQuery += `
+      GROUP BY EXTRACT(HOUR FROM "checkedInAt")
+      ORDER BY hour
     `;
     
-    const hourlyCheckins = await prisma.$queryRaw(hourlySQL);
+    // Run the query as raw SQL
+    const hourlyData = await prisma.$queryRawUnsafe(hourlyQuery);
     
-    // Get check-in distribution by location using the same approach
-    let locationSQL = Prisma.sql`
+    // Process the hourly results
+    if (Array.isArray(hourlyData)) {
+      hourlyData.forEach((row: any) => {
+        const hourIndex = parseInt(row.hour);
+        if (hourIndex >= 0 && hourIndex < 24) {
+          hourlyStats[hourIndex].count = parseInt(row.count);
+        }
+      });
+    }
+    
+    // Create location query with the same approach
+    let locationQuery = `
       SELECT 
-        "checkedInLocation" as location,
+        COALESCE("checkedInLocation", 'Unknown') as location,
         COUNT(*) as count
-      FROM 
-        "Attendee"
+      FROM "Attendee"
       WHERE 
-        "isCheckedIn" = true
-        AND "checkedInAt" >= ${startOfDay}
-        AND "checkedInAt" <= ${endOfDay}
+        "isCheckedIn" = true AND
+        "checkedInAt" >= '${startOfDay.toISOString()}' AND
+        "checkedInAt" <= '${endOfDay.toISOString()}'
     `;
     
-    // Add eventId condition if needed
     if (eventIdParam) {
-      locationSQL = Prisma.sql`${locationSQL} AND "eventId" = ${eventIdParam}`;
+      locationQuery += ` AND "eventId" = '${eventIdParam}'`;
     }
     
-    // Complete the query
-    locationSQL = Prisma.sql`
-      ${locationSQL}
-      GROUP BY 
-        "checkedInLocation"
-      ORDER BY 
-        count DESC
+    locationQuery += `
+      GROUP BY "checkedInLocation"
+      ORDER BY count DESC
     `;
     
-    const locationCheckins = await prisma.$queryRaw(locationSQL);
+    // Run the location query
+    const locationData = await prisma.$queryRawUnsafe(locationQuery);
     
-    // Format check-ins to include all necessary data for reports
-    const formattedCheckins = recentCheckins.map(checkIn => ({
-      id: checkIn.id,
-      name: checkIn.name,
-      email: checkIn.email,
-      checkedInAt: checkIn.checkedInAt,
-      location: checkIn.checkedInLocation || 'Unknown',
-      checkedInBy: checkIn.checkedInBy ? {
-        id: checkIn.checkedInBy.id,
-        name: checkIn.checkedInBy.name,
-        role: checkIn.checkedInBy.role
-      } : null,
-      event: checkIn.event ? {
-        id: checkIn.event.id,
-        name: checkIn.event.name
-      } : null
-    }));
+    // Format location stats
+    const locationStats = Array.isArray(locationData) 
+      ? locationData.map((row: any) => ({
+          location: row.location || 'Unknown',
+          count: parseInt(row.count)
+        }))
+      : [];
     
-    // Return combined data
+    // Get total check-ins for today
+    const totalTodayCheckins = await prisma.attendee.count({
+      where: whereClause
+    });
+    
+    // Return all stats
     return NextResponse.json({
       success: true,
-      day: day.toISOString().split('T')[0],
-      attendees: formattedCheckins,
-      stats: {
-        checkedInToday,
-        totalExpected,
-        completionRate: totalExpected > 0 ? Math.round((checkedInToday / totalExpected) * 100) : 0
-      },
-      hourlyDistribution: hourlyCheckins,
-      locationDistribution: locationCheckins
+      data: {
+        recentCheckins,
+        hourlyStats,
+        locationStats,
+        totalToday: totalTodayCheckins
+      }
     });
     
   } catch (error) {
     console.error('Error fetching recent check-ins:', error);
-    
     return NextResponse.json(
       { 
         success: false, 
-        message: 'Failed to fetch recent check-ins',
-        error: (error as Error).message
+        message: 'Failed to retrieve check-in data',
+        error: (error as Error).message 
       },
       { status: 500 }
     );

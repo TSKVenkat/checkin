@@ -11,12 +11,12 @@ const ALLOWED_ROLES = ['admin', 'manager', 'staff'];
 
 export async function POST(req: NextRequest) {
   try {
-    // Authorize the request
-    const authResult = await authorize(ALLOWED_ROLES)(req);
+    // Authorize the request - only staff, managers and admins can check in attendees
+    const authResult = await authorize(['admin', 'manager', 'staff'])(req);
   
     if (!authResult.success || !authResult.authorized) {
       return NextResponse.json(
-        { success: false, message: authResult.message || 'Unauthorized' },
+        { success: false, message: authResult.message || 'Unauthorized access to check-in process' },
         { status: 403 }
       );
     }

@@ -1,6 +1,7 @@
 // Authorization utility for API routes
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyAccessToken } from './auth';
+import { verifyAccessToken, authenticate } from './auth';
+import { AuthStatus } from './auth';
 
 // User payload interface from auth.ts
 interface UserPayload {
@@ -10,81 +11,85 @@ interface UserPayload {
   permissions: string[];
 }
 
+// Result interface for authorization
+export interface AuthorizeResult {
+  authorized: boolean;
+  success?: boolean;
+  message?: string;
+  status?: number;
+  authStatus: AuthStatus;
+  user?: any;
+}
+
 /**
  * Authorization middleware factory for API routes
  * @param allowedRoles Array of roles allowed to access the resource, empty array means any authenticated user
  * @returns Function that checks if the user is authorized
  */
-export const authorize = (allowedRoles: string[] = []) => {
-  return async (req: NextRequest): Promise<{
-    authorized: boolean;
-    success?: boolean; // Backward compatibility
-    message?: string;
-    status?: number; // Backward compatibility
-    user?: UserPayload;
-  }> => {
-    // Get token from request
-    const token = req.cookies.get('auth_token')?.value || extractBearerToken(req);
-    
-    if (!token) {
-      return { 
-        authorized: false, 
-        success: false,
-        message: 'Authentication required',
-        status: 401
-      };
+export function authorize(allowedRoles: string[] = []) {
+  return async (req: NextRequest): Promise<AuthorizeResult> => {
+    try {
+      // First, authenticate the user
+      const authResult = await authenticate(req);
+      
+      // If not authenticated, return early
+      if (!authResult.authenticated) {
+        return {
+          authorized: false,
+          success: false,
+          message: authResult.message || 'Not authenticated',
+          status: 401,
+          authStatus: 'unauthenticated'
+        };
       }
       
-      // Verify the token
-    const user = verifyAccessToken(token);
-        
-        if (!user) {
-      return { 
-        authorized: false, 
+      // If no specific roles are required, just being authenticated is enough
+      if (!allowedRoles.length) {
+        return {
+          authorized: true,
+          success: true,
+          user: authResult.user,
+          status: 200,
+          authStatus: 'authenticated'
+        };
+      }
+      
+      // Check if the user has one of the allowed roles
+      const hasAllowedRole = allowedRoles.includes(authResult.user!.role);
+      
+      // Admin role has access to everything
+      const isAdmin = authResult.user!.role === 'admin';
+      
+      if (hasAllowedRole || isAdmin) {
+        return {
+          authorized: true,
+          success: true,
+          user: authResult.user,
+          status: 200,
+          authStatus: 'authenticated'
+        };
+      }
+      
+      // User is authenticated but doesn't have the required role
+      return {
+        authorized: false,
         success: false,
-        message: 'Invalid or expired token',
-        status: 401
+        message: 'Insufficient permissions',
+        status: 403,
+        authStatus: 'authenticated'
       };
-        }
-        
-        // If no roles specified, just require authentication
-        if (allowedRoles.length === 0) {
-      return { 
-        authorized: true,
-        success: true,
-        user
+    } catch (error) {
+      console.error('Authorization error:', error);
+      return {
+        authorized: false,
+        success: false,
+        message: 'Authorization failed: ' + (error instanceof Error ? error.message : 'Unknown error'),
+        status: 500,
+        authStatus: 'unauthenticated'
       };
     }
-    
-    // Special case: admin role can access everything
-    if (user.role === 'admin') {
-      return { 
-        authorized: true,
-        success: true,
-        user
-      };
-        }
-        
-        // Check if user has an allowed role
-        if (!user.role || !allowedRoles.includes(user.role)) {
-          console.log(`[authorize] User role ${user.role} not in allowed roles [${allowedRoles.join(', ')}]`);
-          return { 
-            authorized: false, 
-        success: false,
-        message: `Access denied. Required roles: ${allowedRoles.join(', ')}`,
-        status: 403,
-            user
-          };
-        }
-        
-    // All checks passed
-    return { 
-      authorized: true,
-      success: true,
-      user
-    };
   };
-};
+}
 
 /**
  * Extracts bearer token from authorization header
@@ -95,7 +100,7 @@ function extractBearerToken(req: NextRequest): string | null {
     return null;
   }
   return authorization.substring(7);
-    }
+}
 
 /**
  * Checks if the user has permission to access the endpoint and returns an appropriate response if not
@@ -114,7 +119,7 @@ export async function checkAuthorization(
   if (!authResult.authorized) {
     return NextResponse.json(
       { success: false, message: authResult.message },
-      { status: authResult.status || 401 }
+      { status: 401 }
     );
   }
   

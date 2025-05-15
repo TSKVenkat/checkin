@@ -45,12 +45,13 @@ const mockEvents = [
   }
 ];
 
+// For NextJS App Router, use this pattern for route params
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const id = context.params.id;
     
     // Verify authentication and authorization
     const authResult = await verifyAuth(req);
@@ -62,8 +63,8 @@ export async function GET(
       );
     }
     
-    // Check if user has admin or manager role
-    if (!['admin', 'manager'].includes(authResult.user.role)) {
+    // Check if user has required permission
+    if (!['admin', 'manager'].includes(authResult.user?.role || '')) {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }
@@ -96,10 +97,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const id = context.params.id;
     
     // Verify authentication and authorization
     const authResult = await verifyAuth(req);
@@ -112,9 +113,9 @@ export async function PUT(
     }
     
     // Check if user has admin role
-    if (authResult.user.role !== 'admin') {
+    if (authResult.user?.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Insufficient permissions' },
+        { error: 'Only admin users can update events' },
         { status: 403 }
       );
     }
@@ -157,10 +158,10 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const id = context.params.id;
     
     // Verify authentication and authorization
     const authResult = await verifyAuth(req);
@@ -173,7 +174,7 @@ export async function DELETE(
     }
     
     // Check if user has admin role
-    if (authResult.user.role !== 'admin') {
+    if (authResult.user?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }
@@ -198,7 +199,6 @@ export async function DELETE(
       message: 'Event deleted successfully',
       data: { id }
     });
-    
   } catch (error) {
     console.error('Error deleting event:', error);
     return NextResponse.json(

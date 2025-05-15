@@ -4,6 +4,7 @@ import { sign, verify } from 'jsonwebtoken';
 import bcryptjs from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import { SessionStatus, User } from './types';
 // Import prisma only when not in edge runtime
 let prisma: any;
 if (typeof window === 'undefined' && process.env.NEXT_RUNTIME !== 'edge') {
@@ -18,12 +19,23 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET || 'your-refresh-secret-change
 const JWT_EXPIRES_IN = '15m'; // 15 minutes
 const REFRESH_EXPIRES_IN = '7d'; // 7 days
 
-// User payload interface
+// Define type for authentication status
+export type AuthStatus = 'authenticated' | 'unauthenticated' | 'loading';
+
+// Define the user payload interface
 export interface UserPayload {
   id: string;
   email: string;
   role: string;
   permissions: string[];
+}
+
+// Define authentication result interface
+export interface AuthResult {
+  status: SessionStatus;
+  user?: UserPayload;
+  message?: string;
+  authenticated: boolean;
 }
 
 interface TokenData {
@@ -147,16 +159,13 @@ export async function invalidateRefreshToken(userId: string, token: string): Pro
  * Middleware to authenticate requests
  * Authentication from cookies is safe for middleware
  */
-export function authenticateFromCookies(req: NextRequest): {
-  authenticated: boolean;
-  user?: UserPayload;
-  message?: string;
-} {
+export function authenticateFromCookies(req: NextRequest): AuthResult {
   const token = req.cookies.get('auth_token')?.value;
   
   if (!token) {
     return { 
-      authenticated: false, 
+      authenticated: false,
+      status: 'unauthenticated',
       message: 'No authentication token provided' 
     };
   }
@@ -165,13 +174,15 @@ export function authenticateFromCookies(req: NextRequest): {
   
   if (!user) {
     return { 
-      authenticated: false, 
+      authenticated: false,
+      status: 'unauthenticated',
       message: 'Invalid or expired token' 
     };
   }
   
   return {
     authenticated: true,
+    status: 'authenticated',
     user
   };
 }
@@ -179,11 +190,7 @@ export function authenticateFromCookies(req: NextRequest): {
 /**
  * Middleware to authenticate requests - For API routes, not middleware
  */
-export async function authenticate(req: NextRequest): Promise<{
-  authenticated: boolean;
-  user?: UserPayload;
-  message?: string;
-}> {
+export async function authenticate(req: NextRequest): Promise<AuthResult> {
   // In middleware, prefer using cookies
   if (process.env.NEXT_RUNTIME === 'edge') {
     return authenticateFromCookies(req);
@@ -201,6 +208,7 @@ export async function authenticate(req: NextRequest): Promise<{
     if (user) {
       return {
         authenticated: true,
+        status: 'authenticated',
         user
       };
     }
@@ -213,13 +221,15 @@ export async function authenticate(req: NextRequest): Promise<{
     if (user) {
       return {
         authenticated: true,
+        status: 'authenticated',
         user
       };
     }
   }
   
   return { 
-    authenticated: false, 
+    authenticated: false,
+    status: 'unauthenticated',
     message: 'No valid authentication token provided' 
   };
 }

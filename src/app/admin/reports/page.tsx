@@ -52,11 +52,13 @@ interface LocationDistribution {
 // Report data interface
 interface ReportData {
   success: boolean;
-  day: string;
-  attendees: CheckInData[];
-  stats: CheckInStats;
-  hourlyDistribution: HourlyDistribution[];
-  locationDistribution: LocationDistribution[];
+  message?: string;
+  error?: string;
+  day?: string;
+  attendees?: CheckInData[];
+  stats?: CheckInStats;
+  hourlyDistribution?: HourlyDistribution[];
+  locationDistribution?: LocationDistribution[];
 }
 
 // Main page component
@@ -93,11 +95,16 @@ export default function ReportsPage() {
     
     const response = await axios.get<ReportData>(url);
     
-    if (response.data.success) {
-      return response.data;
+    // Check for error in response
+    if (!response.data) {
+      throw new Error('Failed to fetch report data');
     }
     
-    throw new Error(response.data.message || 'Failed to fetch report data');
+    if (!response.data.success) {
+      throw new Error(response.data.message || 'Failed to fetch report data');
+    }
+    
+    return response.data;
   };
 
   // React Query hooks
@@ -268,7 +275,7 @@ export default function ReportsPage() {
                   className="w-full bg-slate-700 border border-slate-600 rounded-md px-4 py-2 appearance-none focus:ring-blue-500 focus:border-blue-500"
                 >
                   <option value="">All Events</option>
-                  {events.map(event => (
+                  {events.map((event: { id: string; name: string }) => (
                     <option key={event.id} value={event.id}>{event.name}</option>
                   ))}
                 </select>

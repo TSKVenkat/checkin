@@ -27,10 +27,10 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // Check if user has admin role
-    if (authResult.user.role !== 'admin') {
+    // Only admin users can upload data
+    if (authResult.user?.role !== 'admin') {
       return NextResponse.json(
-        { error: 'Insufficient permissions' },
+        { success: false, message: 'Admin access required for data upload' },
         { status: 403 }
       );
     }
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Record activity log
-    await recordActivityLog(authResult.user.id, `Uploaded ${type} data`, `Uploaded ${records.length} ${type} records`);
+    await recordActivityLog(authResult.user?.id || 'unknown', `Uploaded ${type} data`, `Uploaded ${records.length} ${type} records`);
     
     // Return success response with results
     return NextResponse.json({
@@ -494,7 +494,7 @@ export async function GET(req: NextRequest) {
     }
     
     // Check if user has admin role
-    if (authResult.user.role !== 'admin') {
+    if (authResult.user?.role !== 'admin') {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }

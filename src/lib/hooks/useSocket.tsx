@@ -3,6 +3,7 @@
 import { useState, useEffect, useContext, createContext } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useAuthSession } from '@/lib/query/auth-hooks';
+import { tokenStorage } from '@/lib/query/auth-hooks';
 
 // Create socket context for provider pattern
 const SocketContext = createContext<Socket | null>(null);
@@ -10,13 +11,16 @@ const SocketContext = createContext<Socket | null>(null);
 // Socket provider component
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
-  const { token, user } = useAuthSession();
+  const { user } = useAuthSession();
   
   useEffect(() => {
     // Don't initialize if we don't have authentication
-    if (!token || !user) return;
+    if (!user) return;
     
     // Create socket connection with auth token
+    const token = tokenStorage.getToken();
+    if (!token) return;
+    
     const socketInstance = io({
       path: '/api/websocket',
       autoConnect: true,
@@ -53,7 +57,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       socketInstance.disconnect();
       setSocket(null);
     };
-  }, [token, user]);
+  }, [user]);
   
   return (
     <SocketContext.Provider value={socket}>

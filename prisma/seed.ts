@@ -141,11 +141,10 @@ async function main() {
       email: 'mohana.kam@gmail.com',
       phone: '+1234567890',
       role: 'VIP',
-      company: 'CheckIn Technologies',
-      jobTitle: 'Software Engineer',
       eventId: '5b6a8b3e-5510-40cc-b961-aade214524f8',
       isCheckedIn: false,
-      uniqueId: 'ATT-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+      uniqueId: 'ATT-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+      qrCodeUrl: '/api/qr/generate?id=mohana'
     }
   });
   console.log('Special attendee created:', mohana);
@@ -158,11 +157,10 @@ async function main() {
         email: `attendee${i}@example.com`,
         phone: `+1${Math.floor(1000000000 + Math.random() * 9000000000)}`,
         role: ['Regular', 'VIP', 'Speaker', 'Staff'][Math.floor(Math.random() * 4)],
-        company: 'Test Company',
-        jobTitle: 'Test Position',
         eventId: '5b6a8b3e-5510-40cc-b961-aade214524f8',
         isCheckedIn: false,
-        uniqueId: 'ATT-' + Math.random().toString(36).substring(2, 10).toUpperCase()
+        uniqueId: 'ATT-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+        qrCodeUrl: `/api/qr/generate?id=attendee${i}`
       }
     });
     console.log(`Attendee ${i} created:`, attendee.name);

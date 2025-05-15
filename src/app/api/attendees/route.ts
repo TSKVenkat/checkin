@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if user has an allowed role (admin, manager, or staff)
-    if (!['admin', 'manager', 'staff'].includes(authResult.user.role)) {
+    if (!['admin', 'manager', 'staff'].includes(authResult.user?.role || '')) {
       return NextResponse.json(
         { success: false, message: 'Insufficient permissions' },
         { status: 403 }
